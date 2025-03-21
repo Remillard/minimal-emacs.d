@@ -590,23 +590,11 @@
   (which-key-max-description-length 40))
 
 ;; -----------------------------------------------------------------------------
-;; Programming Related Packages
+;; Programming Packages
 ;; -----------------------------------------------------------------------------
-;; Enables automatic indentation of code while typing
-(use-package aggressive-indent
-  :ensure t
-  :defer t
-  :commands aggressive-indent-mode
-  :hook
-  (emacs-lisp-mode . aggressive-indent-mode))
-
-;; Highlights function and variable definitions in Emacs Lisp mode
-(use-package highlight-defined
-  :ensure t
-  :defer t
-  :commands highlight-defined-mode
-  :hook (emacs-lisp-mode . highlight-defined-mode))
-
+;;
+;; General
+;;
 ;; Colorizes matching pairs of delimeters
 (use-package rainbow-delimiters
   :ensure t
@@ -629,6 +617,24 @@
   :bind (("<f9>" . symbol-overlay-put))
   :hook ((prog-mode . symbol-overlay-mode)))
 
+;;
+;; Emacs Lisp
+;;
+;; Enables automatic indentation of code while typing
+(use-package aggressive-indent
+  :ensure t
+  :defer t
+  :commands aggressive-indent-mode
+  :hook
+  (emacs-lisp-mode . aggressive-indent-mode))
+
+;; Highlights function and variable definitions in Emacs Lisp mode
+(use-package highlight-defined
+  :ensure t
+  :defer t
+  :commands highlight-defined-mode
+  :hook (emacs-lisp-mode . highlight-defined-mode))
+
 ;; Displays visible indicators for page breaks
 (use-package page-break-lines
   :ensure t
@@ -648,6 +654,26 @@
              elisp-refs-variable
              elisp-refs-special
              elisp-refs-symbol))
+
+;;
+;; VHDL
+;;
+(add-to-list 'load-path "~/.emacs.d/site-lisp/vhdl-mode-3.39.3/")
+(autoload 'vhdl-mode "vhdl-mode" "VHDL Mode" t)
+(setq auto-mode-alist (cons '("\\.vhdl?\\'" . vhdl-mode) auto-mode-alist))
+;; Load separate VHDL settings file here as it just gets too much otherwise.
+
+;;
+;; Verilog
+;;
+
+;;
+;; MATLAB
+;;
+
+;;
+;; Python
+;;
 
 ;; -----------------------------------------------------------------------------
 ;; Preferred Keybindings
