@@ -4,7 +4,7 @@
 ;; Localization Variables
 ;; -----------------------------------------------------------------------------
 ;; External file for local settings
-(add-to-list 'load-path (expand-file-name "site-lisp/" user-emacs-directory))
+(add-to-list 'load-path "~/.emacs.d/site-lisp/")
 (require 'local-settings)
 (setq user-full-name local-full-name)
 (setq user-mail-address local-user-mail-address)
@@ -125,8 +125,20 @@
 (add-hook 'elpaca--post-queues-hook #'(lambda()
                                         (load-theme local-preferred-theme :noconfirm)))
 
-;;(mapc #'disable-theme custom-enabled-themes) ; Disable all active themes
-;;(load-theme 'modus-vivendi :noconfirm)
+;;
+;; Line numbers
+;;
+(add-hook 'conf-mode-hook #'display-line-numbers-mode)
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
+(add-hook 'text-mode-hook #'display-line-numbers-mode)
+(add-hook 'vhdl-mode-hook #'display-line-numbers-mode)
+;; Enable the following if the relative line numbers
+;; are desired.
+;; (setq-default
+;;  display-line-numbers-grow-only t
+;;  display-line-numbers-type 'relative
+;;  display-line-numbers-width 2)
+
 
 ;; -----------------------------------------------------------------------------
 ;; Org Mode
@@ -155,18 +167,24 @@
   :ensure t
   :defer t
   :commands (corfu-mode global-corfu-mode)
-
   :hook ((prog-mode . corfu-mode)
          (shell-mode . corfu-mode)
          (eshell-mode . corfu-mode))
-
   :custom
   ;; Hide commands in M-x which do not apply to the current mode.
   (read-extended-command-predicate #'command-completion-default-include-p)
   ;; Disable Ispell completion function. As an alternative try `cape-dict'.
   (text-mode-ispell-word-completion nil)
   (tab-always-indent 'complete)
-
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)                 ;; Enable auto completion
+  (corfu-separator ?\s)          ;; Orderless field separator
+  (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  (corfu-quit-no-match t)        ;; Never quit, even if there is no match
+  (corfu-preview-current nil)    ;; Disable current candidate preview
+  (corfu-preselect 'prompt)      ;; Preselect the prompt
+  (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  (corfu-scroll-margin 5)        ;; Use scroll margin
   ;; Enable Corfu
   :config
   (global-corfu-mode))
@@ -181,14 +199,26 @@
   ;; used by `completion-at-point'.
   (add-hook 'completion-at-point-functions #'cape-dabbrev)
   (add-hook 'completion-at-point-functions #'cape-file)
-  (add-hook 'completion-at-point-functions #'cape-elisp-block))
+  (add-hook 'completion-at-point-functions #'cape-elisp-block)
+  (add-hook 'completion-at-point-functions #'cape-history))
 
 (use-package vertico
   ;; (Note: It is recommended to also enable the savehist package.)
   :ensure t
   :defer t
   :commands vertico-mode
-  :hook (after-init . vertico-mode))
+  :hook (after-init . vertico-mode)
+  :custom
+  (vertico-resize t)
+  (vertico-cycle t)
+  (vertico-sort-function 'vertico-sort-history-alpha))
+
+;; Turning off fido-vertical mode and icomplete-vertical mode because
+;; they interfere with Vertico.
+(fido-mode -1)
+(fido-vertical-mode -1)
+(icomplete-mode -1)
+(icomplete-vertical-mode -1)
 
 (use-package orderless
   ;; Vertico leverages Orderless' flexible matching capabilities, allowing users
@@ -207,7 +237,15 @@
   :ensure t
   :defer t
   :commands (marginalia-mode marginalia-cycle)
-  :hook (after-init . marginalia-mode))
+  :hook (after-init . marginalia-mode)
+  ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
+  ;; available in the *Completions* buffer, add it to the
+  ;; `completion-list-mode-map'.
+  :bind (:map minibuffer-local-map
+              ("M-A" . marginalia-cycle))
+  :custom
+  (marginalia-max-relative-age 0)
+  (marginalia-align 'right))
 
 (use-package embark
   ;; Embark is an Emacs package that acts like a context menu, allowing
@@ -242,85 +280,108 @@
   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package consult
+:ensure t
+:bind (;; C-c bindings in `mode-specific-map'
+       ("C-c M-x" . consult-mode-command)
+       ("C-c h" . consult-history)
+       ("C-c k" . consult-kmacro)
+       ("C-c m" . consult-man)
+       ("C-c i" . consult-info)
+       ([remap Info-search] . consult-info)
+       ;; C-x bindings in `ctl-x-map'
+       ("C-x M-:" . consult-complex-command)
+       ("C-x b" . consult-buffer)
+       ("C-x 4 b" . consult-buffer-other-window)
+       ("C-x 5 b" . consult-buffer-other-frame)
+       ("C-x t b" . consult-buffer-other-tab)
+       ("C-x r b" . consult-bookmark)
+       ("C-x p b" . consult-project-buffer)
+       ;; Custom M-# bindings for fast register access
+       ("M-#" . consult-register-load)
+       ("M-'" . consult-register-store)
+       ("C-M-#" . consult-register)
+       ;; Other custom bindings
+       ("M-y" . consult-yank-pop)
+       ;; M-g bindings in `goto-map'
+       ("M-g e" . consult-compile-error)
+       ("M-g f" . consult-flymake)
+       ("M-g g" . consult-goto-line)
+       ("M-g M-g" . consult-goto-line)
+       ("M-g o" . consult-outline)
+       ("M-g m" . consult-mark)
+       ("M-g k" . consult-global-mark)
+       ("M-g i" . consult-imenu)
+       ("M-g I" . consult-imenu-multi)
+       ;; M-s bindings in `search-map'
+       ("M-s d" . consult-find)
+       ("M-s c" . consult-locate)
+       ("M-s g" . consult-grep)
+       ("M-s G" . consult-git-grep)
+       ("M-s r" . consult-ripgrep)
+       ("M-s l" . consult-line)
+       ("M-s L" . consult-line-multi)
+       ("M-s k" . consult-keep-lines)
+       ("M-s u" . consult-focus-lines)
+       ;; Isearch integration
+       ("M-s e" . consult-isearch-history)
+       :map isearch-mode-map
+       ("M-e" . consult-isearch-history)
+       ("M-s e" . consult-isearch-history)
+       ("M-s l" . consult-line)
+       ("M-s L" . consult-line-multi)
+       ;; Minibuffer history
+       :map minibuffer-local-map
+       ("M-s" . consult-history)
+       ("M-r" . consult-history))
+
+;; Enable automatic preview at point in the *Completions* buffer.
+:hook (completion-list-mode . consult-preview-at-point-mode)
+
+:init
+;; Optionally configure the register formatting. This improves the register
+(setq register-preview-delay 0.5
+      register-preview-function #'consult-register-format)
+
+;; Optionally tweak the register preview window.
+(advice-add #'register-preview :override #'consult-register-window)
+
+;; Use Consult to select xref locations with preview
+(setq xref-show-xrefs-function #'consult-xref
+      xref-show-definitions-function #'consult-xref)
+
+:config
+(consult-customize
+ consult-theme :preview-key '(:debounce 0.2 any)
+ consult-ripgrep consult-git-grep consult-grep
+ consult-bookmark consult-recent-file consult-xref
+ consult--source-bookmark consult--source-file-register
+ consult--source-recent-file consult--source-project-recent-file
+ ;; :preview-key "M-."
+ :preview-key '(:debounce 0.4 any))
+(setq consult-narrow-key "<"))
+
+;; -----------------------------------------------------------------------------
+;; Editing General
+;; -----------------------------------------------------------------------------
+;; MoveText - Permits M-<up>/<down> on lines or regions to easily move... text
+(use-package move-text
   :ensure t
-  :bind (;; C-c bindings in `mode-specific-map'
-         ("C-c M-x" . consult-mode-command)
-         ("C-c h" . consult-history)
-         ("C-c k" . consult-kmacro)
-         ("C-c m" . consult-man)
-         ("C-c i" . consult-info)
-         ([remap Info-search] . consult-info)
-         ;; C-x bindings in `ctl-x-map'
-         ("C-x M-:" . consult-complex-command)
-         ("C-x b" . consult-buffer)
-         ("C-x 4 b" . consult-buffer-other-window)
-         ("C-x 5 b" . consult-buffer-other-frame)
-         ("C-x t b" . consult-buffer-other-tab)
-         ("C-x r b" . consult-bookmark)
-         ("C-x p b" . consult-project-buffer)
-         ;; Custom M-# bindings for fast register access
-         ("M-#" . consult-register-load)
-         ("M-'" . consult-register-store)
-         ("C-M-#" . consult-register)
-         ;; Other custom bindings
-         ("M-y" . consult-yank-pop)
-         ;; M-g bindings in `goto-map'
-         ("M-g e" . consult-compile-error)
-         ("M-g f" . consult-flymake)
-         ("M-g g" . consult-goto-line)
-         ("M-g M-g" . consult-goto-line)
-         ("M-g o" . consult-outline)
-         ("M-g m" . consult-mark)
-         ("M-g k" . consult-global-mark)
-         ("M-g i" . consult-imenu)
-         ("M-g I" . consult-imenu-multi)
-         ;; M-s bindings in `search-map'
-         ("M-s d" . consult-find)
-         ("M-s c" . consult-locate)
-         ("M-s g" . consult-grep)
-         ("M-s G" . consult-git-grep)
-         ("M-s r" . consult-ripgrep)
-         ("M-s l" . consult-line)
-         ("M-s L" . consult-line-multi)
-         ("M-s k" . consult-keep-lines)
-         ("M-s u" . consult-focus-lines)
-         ;; Isearch integration
-         ("M-s e" . consult-isearch-history)
-         :map isearch-mode-map
-         ("M-e" . consult-isearch-history)
-         ("M-s e" . consult-isearch-history)
-         ("M-s l" . consult-line)
-         ("M-s L" . consult-line-multi)
-         ;; Minibuffer history
-         :map minibuffer-local-map
-         ("M-s" . consult-history)
-         ("M-r" . consult-history))
-
-  ;; Enable automatic preview at point in the *Completions* buffer.
-  :hook (completion-list-mode . consult-preview-at-point-mode)
-
-  :init
-  ;; Optionally configure the register formatting. This improves the register
-  (setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
-
-  ;; Optionally tweak the register preview window.
-  (advice-add #'register-preview :override #'consult-register-window)
-
-  ;; Use Consult to select xref locations with preview
-  (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-
+  :defer t
   :config
-  (consult-customize
-   consult-theme :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep
-   consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
-   ;; :preview-key "M-."
-   :preview-key '(:debounce 0.4 any))
-  (setq consult-narrow-key "<"))
+  (move-text-default-bindings))
+
+;; Whole Line or Region DWIM
+(use-package whole-line-or-region
+  :ensure t
+  :defer t
+  :config
+  (whole-line-or-region-global-mode))
+
+(use-package ace-window
+  :ensure t
+  :defer t
+  :bind (("M-o" . ace-window)))
+
 
 ;; -----------------------------------------------------------------------------
 ;; Better Undo/Redo
@@ -346,24 +407,25 @@
   :hook (after-init . undo-fu-session-global-mode))
 
 ;; -----------------------------------------------------------------------------
-;; Completion Packages
+;; Better Help
 ;; -----------------------------------------------------------------------------
 (use-package helpful
-  :defer t
-  :commands (helpful-callable
-             helpful-variable
-             helpful-key
-             helpful-command
-             helpful-at-point
-             helpful-function)
-  :bind
-  ([remap describe-command] . helpful-command)
-  ([remap describe-function] . helpful-callable)
-  ([remap describe-key] . helpful-key)
-  ([remap describe-symbol] . helpful-symbol)
-  ([remap describe-variable] . helpful-variable)
-  :custom
-  (helpful-max-buffers 7))
+:defer t
+:commands (helpful-callable
+           helpful-variable
+           helpful-key
+           helpful-command
+           helpful-at-point
+           helpful-function)
+:bind
+([remap describe-command] . helpful-command)
+([remap describe-function] . helpful-callable)
+([remap describe-key] . helpful-key)
+([remap describe-symbol] . helpful-symbol)
+([remap describe-variable] . helpful-variable)
+:custom
+(helpful-max-buffers 7))
+
 
 ;; -----------------------------------------------------------------------------
 ;; Programming Related Packages
@@ -389,8 +451,7 @@
   :ensure t
   :defer t
   :config
-  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
-  (add-hook 'vhdl-mode-hook 'rainbow-delimiters-mode))
+  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
 ;; Smark handling of delimeters
 (use-package smartparens
@@ -406,6 +467,15 @@
   :config
   (show-paren-mode 0)
   (require 'smartparens-config))
+
+;; Symbol overlay is a package that helps manipulate symbols under the point.
+(use-package symbol-overlay
+:ensure t
+:defer t
+:bind (("<f9>" . symbol-overlay-put))
+:config
+(add-hook 'prog-mode-hook 'symbol-overlay-mode))
+
 
 ;; -----------------------------------------------------------------------------
 ;; Preferred Keybindings
