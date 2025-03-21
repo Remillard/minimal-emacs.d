@@ -1,0 +1,68 @@
+;;; local-settings.el --- Localized setup -*- no-byte-compile: t; lexical-binding: t; -*-
+
+;; Author: Mark Norton
+;; URL: https://github.com/Remillard/minimal-emacs.d
+
+;;; Commentary
+;; Out of the repository this file is named local-settings.el.template.  This file
+;; should remove the `.template' and then `post-init.el' should pick it up and use it.
+
+;;; Variables
+(defvar local-full-name "User Name"
+  "The LOCAL-FULL-NAME variable will be assigned to the standard Emacs
+variable USER-FULL-NAME in `init.el'")
+
+(defvar local-user-mail-address "user@email.com"
+  "The LOCAL-USER-MAIL-ADDRESS will be assigned to the standard Emacs
+variable USER-MAIL-ADDRESS in `init.el'")
+
+(defvar local-vhdl-company-name "Self"
+  "The LOCAL-VHDL-COMPANY-NAME will be assigned to the `vhdl-mode'
+variable VHDL-COMPANY-NAME in `init.el'")
+
+(defvar local-temp-file-dir (expand-file-name "temp/" user-emacs-directory)
+  "The LOCAL-TEMP-FILE-DIR variable will be assigned to the standard Emacs
+variable TEMPORARY-FILE-DIRECTORY in `init.el'.  If desired, alter the sexp
+to a string literal when the temp directory is not in the user directory.")
+
+(defvar local-notes-dir "~/Notes/"
+  "The LOCAL-NOTES-DIR variable will be assigned to the `denote' variable
+DENOTE-DIRECTORY in `init.el', as well as used for the `org-mode' setting for
+the ORG-DEFAULT-NOTES-FILE value.")
+
+(defvar local-notes-file (expand-file-name "notes.org" local-notes-dir)
+  "The LOCAL-NOTES-FILE variable will be assigned to the `org-mode variable
+ORG-DEFAULT-NOTES-FILE in `init.el'")
+
+(defvar local-preferred-font-name "Cascadia Code Light 11"
+  "The LOCAL-PREFERRED-FONT-NAME variable will be assigned to the frame font
+in `init.el'.  Several frequent variations:
+  - Inconsolata 14
+  - Roboto Mono 12
+  - Consolas 12
+  - Cascadia Code Light 11
+  - Fira Code 11")
+
+(defvar local-starting-frame-max t
+  "the LOCAL-STARTING-FRAME-MAX boolean variable is used to pick between a
+set frame size and maximized frame size in `init.el'")
+
+(defvar local-preferred-theme 'ef-maris-dark
+  "The LOCAL-PREFERRED-THEME symbol variable is used to pick the
+desired theme for this installation (out of `doom-themes',
+`ef-themes', `vscode-dark-plus-theme', etc.)  Several preferred
+variations:
+  - ef-bio
+  - ef-maris-dark
+  - vscode-dark-plus
+  - doom-gruvbox
+  - doom-ayu-mirage
+  - doom-Iosvkem
+  - doom-bluloco-dark
+  - doom-dark+
+  - doom-horizon
+  - doom-material
+  - doom-monokai-pro
+  - doom-one")
+
+(provide 'local-settings)

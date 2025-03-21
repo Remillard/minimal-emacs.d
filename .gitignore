@@ -1,7 +1,33 @@
-*
+# -------------------------------------------------------
+# Basic minimal-emacs files.  Never check these in.  They
+# only flow one way -- into the forked repo
+# -------------------------------------------------------
 !README.md
 !early-init.el
 !init.el
 !.images/
 !.github/
 !.LICENSE
+# -------------------------------------------------------
+# Emacs Specific
+# -------------------------------------------------------
+*.elc
+.cask
+*!
+\#*
+*.~undo-tree
+# -------------------------------------------------------
+# Repository Specific
+# -------------------------------------------------------
+autosave/
+elpaca/
+custom.el
+history
+bookmarks
+projects
+recentf
+saveplace
+srecode-map.el
+site-lisp/local-settings.el
+
+

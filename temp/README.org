@@ -1,0 +1,2 @@
+This file preserves the temp directory in the repository, even though we're
+going to ignore everything else in this directory.
