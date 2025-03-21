@@ -210,12 +210,32 @@
 
 ;; -----------------------------------------------------------------------------
 ;; Magit
-;; (Currently commented out due to requiring a newer transient than built-in)
 ;; -----------------------------------------------------------------------------
-;; (use-package magit
-;;   :ensure t
-;;   :bind
-;;   ("C-x g" . magit-status))
+;; Forcing transient to be newer due to Magit requirements.
+(use-package transient
+  :ensure (:host github :repo "magit/transient")
+  :demand t)
+
+(use-package magit
+  :ensure t
+  :after transient
+  :bind
+  ("C-x g" . magit-status))
+
+(use-package git-gutter
+  :ensure t
+  :defer t
+  :hook (prog-mode text-mode)
+  :config
+  (setq git-gutter:update-interval 1))
+
+(use-package git-gutter-fringe
+  :ensure t
+  :defer t
+  :config
+  (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil '(center repeated)))
 
 ;; -----------------------------------------------------------------------------
 ;; Org Mode
