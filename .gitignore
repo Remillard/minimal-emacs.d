@@ -21,6 +21,7 @@
 # -------------------------------------------------------
 autosave/
 elpaca/
+var/
 custom.el
 history
 bookmarks

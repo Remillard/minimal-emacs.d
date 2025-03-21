@@ -209,6 +209,15 @@
   (uniquify-ignore-buffers-re "^\\*"))
 
 ;; -----------------------------------------------------------------------------
+;; Magit
+;; (Currently commented out due to requiring a newer transient than built-in)
+;; -----------------------------------------------------------------------------
+;; (use-package magit
+;;   :ensure t
+;;   :bind
+;;   ("C-x g" . magit-status))
+
+;; -----------------------------------------------------------------------------
 ;; Org Mode
 ;; -----------------------------------------------------------------------------
 (use-package org
@@ -257,6 +266,26 @@
   :config
   (global-corfu-mode))
 
+;; A few more useful configurations...
+(use-package emacs
+  :ensure nil ;; Built-in naturally
+  :custom
+  ;; TAB cycle if there are only few candidates
+  ;; (completion-cycle-threshold 3)
+
+  ;; Enable indentation+completion using the TAB key.
+  ;; `completion-at-point' is often bound to M-TAB.
+  (tab-always-indent 'complete)
+
+  ;; Emacs 30 and newer: Disable Ispell completion function. As an alternative,
+  ;; try `cape-dict'.
+  (text-mode-ispell-word-completion nil)
+
+  ;; Emacs 28 and newer: Hide commands in M-x which do not apply to the current
+  ;; mode.  Corfu commands are hidden, since they are not used via M-x. This
+  ;; setting is useful beyond Corfu.
+  (read-extended-command-predicate #'command-completion-default-include-p))
+
 (use-package cape
   :ensure t
   :defer t
@@ -280,6 +309,33 @@
   (vertico-resize t)
   (vertico-cycle t)
   (vertico-sort-function 'vertico-sort-history-alpha))
+
+;; A few more useful configurations for Vertico
+(use-package emacs
+  :ensure nil ;; built-in (naturally)
+  :custom
+  ;; Support opening new minibuffers from inside existing minibuffers.
+  (enable-recursive-minibuffers t)
+  ;; Hide commands in M-x which do not work in the current mode.  Vertico
+  ;; commands are hidden in normal buffers. This setting is useful beyond
+  ;; Vertico.
+  (read-extended-command-predicate #'command-completion-default-include-p)
+  :init
+  ;; Add prompt indicator to `completing-read-multiple'.
+  ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+  (defun crm-indicator (args)
+    (cons (format "[CRM%s] %s"
+                  (replace-regexp-in-string
+                   "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+                   crm-separator)
+                  (car args))
+          (cdr args)))
+  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+  ;; Do not allow the cursor in the minibuffer prompt
+  (setq minibuffer-prompt-properties
+        '(read-only t cursor-intangible t face minibuffer-prompt))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode))
 
 ;; Turning off fido-vertical mode and icomplete-vertical mode because
 ;; they interfere with Vertico.
@@ -434,14 +490,14 @@
 ;; MoveText - Permits M-<up>/<down> on lines or regions to easily move... text
 (use-package move-text
   :ensure t
-  :defer t
+  :demand t
   :config
   (move-text-default-bindings))
 
 ;; Whole Line or Region DWIM
 (use-package whole-line-or-region
   :ensure t
-  :defer t
+  :demand t
   :config
   (whole-line-or-region-global-mode))
 
