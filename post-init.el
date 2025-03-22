@@ -39,13 +39,6 @@
   (push "/post-init.el" compile-angel-excluded-files)
   (push "/pre-early-init.el" compile-angel-excluded-files)
   (push "/post-early-init.el" compile-angel-excluded-files)
-  ;; These are added because there are several Lisp files in the Emacs
-  ;; installation that does not have a compiled version, and compile-angel
-  ;; will dutifully try to compile it into the installation location which
-  ;; causes permission errors in Windows.
-  (push "/subdirs.el" compile-angel-excluded-files)
-  (push "/modus-vivendi-theme.el" compile-angel-excluded-files)
-  (push "/modus-themes.el" compile-angel-excluded-files)
 
   ;; A local mode that compiles .el files whenever the user saves them.
   ;; (add-hook 'emacs-lisp-mode-hook #'compile-angel-on-save-local-mode)
@@ -242,7 +235,7 @@
 ;; -----------------------------------------------------------------------------
 (use-package org
   :ensure (:host "git.savannah.gnu.org" :repo "git/emacs/org-mode")
-  :defer t
+  :demand t
   :commands (org-mode org-version)
   :mode
   ("\\.org\\'" . org-mode)
@@ -255,7 +248,65 @@
   (org-fontify-done-headline t)
   (org-fontify-todo-headline t)
   (org-fontify-whole-heading-line t)
-  (org-fontify-quote-and-verse-blocks t))
+  (org-fontify-quote-and-verse-blocks t)
+  (org-default-notes-file local-notes-file)
+  (org-capture-bookmark nil))
+
+(setq calendar-week-start-day 1)
+
+(use-package org-appear
+  :ensure t
+  :defer t
+  :after org
+  :hook (org-mode-hook . org-appear-mode)
+  :bind (("C-c c" . org-capture)
+         ("C-c l" . org-store-link)
+         ("C-c O" . org-mark-ring-goto))
+  :custom
+  (org-appear-autoemphasis t)
+  (org-appear-autolinks t)
+  (org-appear-autosubmarkers t)
+  (org-appear-autoentities nil)
+  (org-appear-autokeywords nil)
+  (org-appear-inside-latex nil)
+  (org-appear-trigger 'always))
+
+(use-package denote
+  :ensure t
+  :demand t
+  :after org
+  :bind (("C-c n n" . denote-create-note)
+         ("C-c n l" . denote-link)
+         ("C-c n d" . denote-date))
+  :hook (text-mode . denote-fontify-links-mode-maybe)
+  :custom
+  (setq denote-directory (expand-file-name local-notes-dir))
+  (setq denote-known-keywords '("emacs" "python" "vhdl" "verilog" "books" "life" "work" "politics" "warcraft" "WoW"))
+  (setq denote-infer-keywords t)
+  (setq denote-sort-keywords t)
+  (setq denote-file-type nil)
+  (setq denote-prompts '(title keywords))
+  (setq denote-excluded-directories-regexp nil)
+  (setq denote-excluded-keywords-regexp nil)
+  (setq denote-date-prompt-use-org-read-date t)
+  (setq denote-backlinks-show-context t)
+  (org-capture-templates
+   '(("f" "Fleeting note" item
+      (file+headline org-default-notes-file "Notes")
+      "- %?")
+     ("p" "Permanent note" plain
+      (file denote-last-path)
+      #'denote-org-capture
+      :no-save t
+      :immediate-finish nil
+      :kill-buffer t
+      :jump-to-captured t)
+     ("t" "New task" entry
+      (file+headline org-default-notes-file "Tasks")
+      "* TODO %i%?")
+     ("a" "Appointment" entry
+      (file+headline org-default-notes-file "Appointments")
+      "* %i%?"))))
 
 ;; -----------------------------------------------------------------------------
 ;; Code Completion Packages
