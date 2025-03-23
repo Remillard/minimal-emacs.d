@@ -159,6 +159,12 @@
 (add-hook 'elpaca--post-queues-hook #'(lambda()
                                         (load-theme local-preferred-theme :noconfirm)))
 
+;; Doom Modeline
+(use-package doom-modeline
+  :ensure t
+  :demand t
+  :init (doom-modeline-mode 1))
+
 ;;
 ;; Line numbers
 ;;
@@ -195,11 +201,30 @@
 ;; Ensures buffer names are unique
 (use-package uniquify
   :ensure nil
+  :defer t
   :custom
   (uniquify-buffer-name-style 'reverse)
   (uniquify-separator "•")
   (uniquify-after-kill-buffer-p t)
   (uniquify-ignore-buffers-re "^\\*"))
+
+;; Dashboard
+(use-package dashboard
+  :ensure t
+  :demand t
+  :config
+  (dashboard-setup-startup-hook)
+  (setq dashboard-projects-backend 'project-el)
+  (setq initial-buffer-choice (lambda () (get-buffer-create dashboard-buffer-name)))
+  (setq dashboard-agenda-sort-strategy '(time-up))
+  (setq dashboard-items '((agenda . 5)
+                          (bookmarks . 5)
+                          (projects . 5)
+                          (recents . 5)))
+  (setq dashboard-icon-type 'nerd-icons))
+
+(add-hook 'elpaca--post-queues-hook #'(lambda()
+                                        (dashboard-open)))
 
 ;; -----------------------------------------------------------------------------
 ;; Magit
@@ -217,14 +242,14 @@
 
 (use-package git-gutter
   :ensure t
-  :defer t
+  :demand t
   :hook (prog-mode text-mode)
   :config
   (setq git-gutter:update-interval 1))
 
 (use-package git-gutter-fringe
   :ensure t
-  :defer t
+  :demand t
   :config
   (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
   (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
@@ -256,8 +281,7 @@
 
 (use-package org-appear
   :ensure t
-  :defer t
-  :after org
+  :demand t
   :hook (org-mode-hook . org-appear-mode)
   :bind (("C-c c" . org-capture)
          ("C-c l" . org-store-link)
@@ -740,3 +764,9 @@
 ;; I never use the brief list directory and I always mistype for dired
 (global-set-key (kbd "C-x C-d") 'dired)
 
+;; Shortcut to post-init.el
+(defun find-config ()
+  "Edit init.el"
+  (interactive)
+  (find-file "~/.emacs.d/post-init.el"))
+(global-set-key (kbd "C-c I") 'find-config)
