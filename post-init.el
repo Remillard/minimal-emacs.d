@@ -225,6 +225,27 @@
 
 (add-hook 'elpaca--post-queues-hook #'(lambda()
                                         (dashboard-open)))
+;; Redefining the action taken when a project is selected in dashboard.
+;; Previously it would do a find file in the project.  However this
+;; will simply open dired at the base directory which is a lot more
+;; useful to start.  
+(eval-after-load "dashboard"
+  '(defun dashboard-projects-backend-switch-function ()
+     "Return the function to switch to a project.
+Custom variable `dashboard-projects-switch-function' variable takes preference
+over custom backends."
+     (or dashboard-projects-switch-function
+         (cl-case dashboard-projects-backend
+           (`projectile 'projectile-switch-project-by-name)
+           (`project-el
+            (lambda (project)
+              "This function is used to switch to `PROJECT'."
+              (let ((default-directory project))
+                (dired default-directory))))
+           (t
+            (display-warning '(dashboard)
+                             "Invalid value for `dashboard-projects-backend'"
+                             :error))))))
 
 ;; -----------------------------------------------------------------------------
 ;; Magit
