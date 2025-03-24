@@ -211,7 +211,7 @@
 ;; Dashboard
 (use-package dashboard
   :ensure t
-  :demand t
+  :defer t
   :config
   (dashboard-setup-startup-hook)
   (setq dashboard-projects-backend 'project-el)
@@ -415,12 +415,12 @@
   ;; (Note: It is recommended to also enable the savehist package.)
   :ensure t
   :defer t
-  :commands vertico-mode
-  :hook (after-init . vertico-mode)
   :custom
   (vertico-resize t)
   (vertico-cycle t)
-  (vertico-sort-function 'vertico-sort-history-alpha))
+  (vertico-sort-function 'vertico-sort-history-alpha)
+  :init
+  (vertico-mode))
 
 ;; A few more useful configurations for Vertico
 (use-package emacs
@@ -609,9 +609,9 @@
 ;; Whole Line or Region DWIM
 (use-package whole-line-or-region
   :ensure t
-  :demand t
-  :config
-  (whole-line-or-region-global-mode))
+  :defer t
+  :hook ((text-mode . whole-line-or-region-local-mode)
+         (prog-mode . whole-line-or-region-local-mode)))
 
 (use-package ace-window
   :ensure t
@@ -621,6 +621,7 @@
 ;; The undo-fu package is a lightweight wrapper around Emacs' built-in undo
 ;; system, providing more convenient undo/redo functionality.
 (use-package undo-fu
+  :ensure t
   :defer t
   :commands (undo-fu-only-undo
              undo-fu-only-redo
@@ -634,6 +635,7 @@
 ;; The undo-fu-session package complements undo-fu by enabling the saving
 ;; and restoration of undo history across Emacs sessions, even after restarting.
 (use-package undo-fu-session
+  :ensure t
   :defer t
   :commands undo-fu-session-global-mode
   :hook (after-init . undo-fu-session-global-mode))
@@ -653,6 +655,7 @@
 ;; Better Help
 ;; -----------------------------------------------------------------------------
 (use-package helpful
+  :ensure t
   :defer t
   :commands (helpful-callable
              helpful-variable
@@ -692,7 +695,7 @@
   :ensure t
   :defer t
   :commands (rainbow-delimiters-mode)
-  :hook (prog-mode . rainbow-delimiters-mode))
+  :hook (prog-mode))
 
 ;; Smart handling of delimeters
 (use-package smartparens
