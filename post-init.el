@@ -262,30 +262,47 @@
   :ensure (:host "git.savannah.gnu.org" :repo "git/emacs/org-mode")
   :demand t
   :commands (org-mode org-version)
-  :mode
-  ("\\.org\\'" . org-mode)
+  :bind (:map org-mode-map
+              ("C-c <up>" . org-table-insert-row)
+              ("C-c <down>" . org-table-insert-hline)
+              ("C-c <right>" . org-table-insert-col)
+              ("C-C <left>" . org-table-delete-col)
+              ("C-c c" . org-capture)
+              ("C-c l" . org-store-link)
+              ("C-c O" . org-mark-ring-goto))
+  :mode ("\\.org\\'" . org-mode)
   :custom
-  (org-hide-leading-stars t)
+  (org-startup-truncated nil)
   (org-startup-indented t)
+  (org-startup-with-inline-images t)
+  (org-startup-with-latex-preview nil)
+  (org-hide-emphasis-markers t)
+  (org-hide-leading-stars t)
   (org-adapt-indentation nil)
   (org-edit-src-content-indentation 0)
-  (org-startup-truncated nil)
+  (org-image-actual-width '(450))
+  (org-fold-catch-invisible-edits 'error)
   (org-fontify-done-headline t)
   (org-fontify-todo-headline t)
   (org-fontify-whole-heading-line t)
   (org-fontify-quote-and-verse-blocks t)
+  (org-pretty-entities t)
+  (org-use-sub-superscripts "{}")
+  (org-id-link-to-org-use-id t)
   (org-default-notes-file local-notes-file)
-  (org-capture-bookmark nil))
+  (org-capture-bookmark nil)
+  (org-log-done 'time)
+  :config
+  (setq org-agenda-files (list local-notes-file)))
 
+;; TODO Translate original calendar settings from original custom.el.
 (setq calendar-week-start-day 1)
 
 (use-package org-appear
   :ensure t
-  :demand t
-  :hook (org-mode-hook . org-appear-mode)
-  :bind (("C-c c" . org-capture)
-         ("C-c l" . org-store-link)
-         ("C-c O" . org-mark-ring-goto))
+  :defer t
+  :requires org
+  :hook org-mode
   :custom
   (org-appear-autoemphasis t)
   (org-appear-autolinks t)
@@ -298,12 +315,12 @@
 (use-package denote
   :ensure t
   :demand t
-  :after org
+  :requires org
   :bind (("C-c n n" . denote-create-note)
          ("C-c n l" . denote-link)
          ("C-c n d" . denote-date))
   :hook (text-mode . denote-fontify-links-mode-maybe)
-  :custom
+  :config
   (setq denote-directory (expand-file-name local-notes-dir))
   (setq denote-known-keywords '("emacs" "python" "vhdl" "verilog" "books" "life" "work" "politics" "warcraft" "WoW"))
   (setq denote-infer-keywords t)
@@ -314,7 +331,7 @@
   (setq denote-excluded-keywords-regexp nil)
   (setq denote-date-prompt-use-org-read-date t)
   (setq denote-backlinks-show-context t)
-  (org-capture-templates
+  (setq org-capture-templates
    '(("f" "Fleeting note" item
       (file+headline org-default-notes-file "Notes")
       "- %?")
