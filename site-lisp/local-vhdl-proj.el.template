@@ -1,0 +1,20 @@
+;;; local-vhdl-proj.el --- VHDL Mode Configuration -*- no-byte-compile: t; lexical-binding: t; -*-
+
+;; Author: Mark Norton
+;; URL: https://github.com/remillard/minimal-emacs.d
+;; Package-Requires: ((emacs "29.1"))
+
+;;; Commentary
+;; This file is intended to not be committed to the repository and simply
+;; be used by vhdl-mode-config.el to load localized project settings.
+
+
+(setopt vhdl-project-alist
+        '(("TMP126 Model" "TMP126 HDL Verification Model" "d:/projects/tmp126_hdl_model/"
+           ("src/")
+           " "
+           (("ModelSim" "-2008 -work \\1" "-f \\1 top_level" nil))
+           "sim/" "work" "sim/" "Makefile_\\2" "")))
+
+(provide 'local-vhdl-proj)
+

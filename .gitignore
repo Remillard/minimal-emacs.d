@@ -30,5 +30,6 @@ recentf
 saveplace
 srecode-map.el
 site-lisp/local-settings.el
+site-lisp/local-vhdl-proj.el
 
 

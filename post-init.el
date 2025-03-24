@@ -60,7 +60,7 @@
 (add-hook 'after-init-hook #'(lambda()
                                (let ((inhibit-message t))
                                  (recentf-mode 1))))
-;;(add-hook 'kill-emacs-hook #'recentf-cleanup)
+(add-hook 'kill-emacs-hook #'recentf-cleanup)
 (setq recentf-max-menu-items 25)
 (setq recentf-max-saved-items 25)
 (add-hook 'after-init-hook #'(lambda()
@@ -262,14 +262,14 @@
   :ensure (:host "git.savannah.gnu.org" :repo "git/emacs/org-mode")
   :demand t
   :commands (org-mode org-version)
-  :bind (:map org-mode-map
-              ("C-c <up>" . org-table-insert-row)
-              ("C-c <down>" . org-table-insert-hline)
-              ("C-c <right>" . org-table-insert-col)
-              ("C-C <left>" . org-table-delete-col)
-              ("C-c c" . org-capture)
-              ("C-c l" . org-store-link)
-              ("C-c O" . org-mark-ring-goto))
+  :bind (("C-c c" . org-capture)
+         ("C-c l" . org-store-link)
+         ("C-c O" . org-mark-ring-goto)
+         :map org-mode-map
+         ("C-c <up>" . org-table-insert-row)
+         ("C-c <down>" . org-table-insert-hline)
+         ("C-c <right>" . org-table-insert-column)
+         ("C-C <left>" . org-table-delete-column))
   :mode ("\\.org\\'" . org-mode)
   :custom
   (org-startup-truncated nil)
@@ -332,25 +332,25 @@
   (setq denote-date-prompt-use-org-read-date t)
   (setq denote-backlinks-show-context t)
   (setq org-capture-templates
-   '(("f" "Fleeting note" item
-      (file+headline org-default-notes-file "Notes")
-      "- %?")
-     ("p" "Permanent note" plain
-      (file denote-last-path)
-      #'denote-org-capture
-      :no-save t
-      :immediate-finish nil
-      :kill-buffer t
-      :jump-to-captured t)
-     ("t" "New task" entry
-      (file+headline org-default-notes-file "Tasks")
-      "* TODO %i%?")
-     ("a" "Appointment" entry
-      (file+headline org-default-notes-file "Appointments")
-      "* %i%?"))))
+        '(("f" "Fleeting note" item
+           (file+headline org-default-notes-file "Notes")
+           "- %?")
+          ("p" "Permanent note" plain
+           (file denote-last-path)
+           #'denote-org-capture
+           :no-save t
+           :immediate-finish nil
+           :kill-buffer t
+           :jump-to-captured t)
+          ("t" "New task" entry
+           (file+headline org-default-notes-file "Tasks")
+           "* TODO %i%?")
+          ("a" "Appointment" entry
+           (file+headline org-default-notes-file "Appointments")
+           "* %i%?"))))
 
 ;; -----------------------------------------------------------------------------
-;; Code Completion Packages
+;; Completion Packages
 ;; -----------------------------------------------------------------------------
 (use-package corfu
   :ensure t
@@ -750,10 +750,8 @@
 ;;
 ;; VHDL
 ;;
-(add-to-list 'load-path "~/.emacs.d/site-lisp/vhdl-mode-3.39.3/")
-(autoload 'vhdl-mode "vhdl-mode" "VHDL Mode" t)
-(setq auto-mode-alist (cons '("\\.vhdl?\\'" . vhdl-mode) auto-mode-alist))
 ;; Load separate VHDL settings file here as it just gets too much otherwise.
+(require 'vhdl-mode-config)
 
 ;;
 ;; Verilog
@@ -780,6 +778,22 @@
 (global-unset-key (kbd "C-<wheel-down>"))
 ;; I never use the brief list directory and I always mistype for dired
 (global-set-key (kbd "C-x C-d") 'dired)
+
+;; Shortcuts for dealing with compilation.
+(global-set-key (kbd "<f1>") 'next-error)
+(defun move-to-compilation-and-kill-buffer ()
+  "Move to the Compilation window and kill its buffer.
+If the Compilation window does not exist, do nothing.
+Moves back to the original window."
+  (interactive)
+  (let ((compilation-window (get-buffer-window "*compilation*"))
+        (original-window (selected-window)))
+    (when compilation-window
+      (select-window compilation-window)
+      (kill-buffer "*compilation*")
+      (delete-window compilation-window)
+      (select-window original-window))))
+(global-set-key (kbd "<f2>") 'move-to-compilation-and-kill-buffer)
 
 ;; Shortcut to post-init.el
 (defun find-config ()
