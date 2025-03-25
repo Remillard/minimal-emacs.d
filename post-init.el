@@ -436,12 +436,11 @@ over custom backends."
   ;; (Note: It is recommended to also enable the savehist package.)
   :ensure t
   :defer t
+  :hook (elpaca-after-init . vertico-mode)
   :custom
   (vertico-resize t)
   (vertico-cycle t)
-  (vertico-sort-function 'vertico-sort-history-alpha)
-  :init
-  (vertico-mode))
+  (vertico-sort-function 'vertico-sort-history-alpha))
 
 ;; A few more useful configurations for Vertico
 (use-package emacs
@@ -482,6 +481,7 @@ over custom backends."
   ;; to input multiple patterns separated by spaces, which Orderless then
   ;; matches in any order against the candidates.
   :ensure t
+  :defer t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
@@ -533,11 +533,13 @@ over custom backends."
 
 (use-package embark-consult
   :ensure t
+  :defer t
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package consult
   :ensure t
+  :defer
   :bind (;; C-c bindings in `mode-specific-map'
          ("C-c M-x" . consult-mode-command)
          ("C-c h" . consult-history)
@@ -623,9 +625,8 @@ over custom backends."
 ;; MoveText - Permits M-<up>/<down> on lines or regions to easily move... text
 (use-package move-text
   :ensure t
-  :demand t
-  :config
-  (move-text-default-bindings))
+  :defer t
+  :hook (elpaca-after-init . move-text-default-bindings))
 
 ;; Whole Line or Region DWIM
 (use-package whole-line-or-region
