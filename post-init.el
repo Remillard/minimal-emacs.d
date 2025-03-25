@@ -789,6 +789,10 @@ over custom backends."
 ;;
 ;; Python
 ;;
+(use-package blacken
+  :ensure t
+  :defer t
+  :hook (python-mode . blacken-mode))
 
 ;; -----------------------------------------------------------------------------
 ;; Preferred Keybindings
@@ -826,3 +830,11 @@ Moves back to the original window."
   (interactive)
   (find-file "~/.emacs.d/post-init.el"))
 (global-set-key (kbd "C-c I") 'find-config)
+
+;; Insert a time stamp in buffers that don't support C-c . like org.
+(defun insert-time-stamp ()
+  "Inserts a time stamp 'YYYY-MM-DD HH:MM AM/PM'"
+  (interactive)
+  (insert (format-time-string "%a %b %e %Y %H:%M:%S")))
+
+
