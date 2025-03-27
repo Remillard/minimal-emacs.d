@@ -707,11 +707,13 @@ over custom backends."
   (which-key-max-description-length 40))
 
 ;; -----------------------------------------------------------------------------
-;; Programming Packages
+;; Programming Packages and Settings
 ;; -----------------------------------------------------------------------------
 ;;
 ;; General
 ;;
+(setopt explicit-shell-file-name "c:/Program Files/PowerShell/7/pwsh.exe")
+
 ;; Colorizes matching pairs of delimeters
 (use-package rainbow-delimiters
   :ensure t
@@ -733,6 +735,13 @@ over custom backends."
   :defer t
   :bind (("<f9>" . symbol-overlay-put))
   :hook ((prog-mode . symbol-overlay-mode)))
+
+;; Hexl Inspect is a minor mode to Hexl that provides inspection data at the
+;; point
+(use-package hexl-inspect
+  :ensure (:host github :repo "Remillard/hexl-inspect")
+  :defer t
+  :hook (hexl-mode . (lambda () (define-key hexl-mode-map (kbd "C-c i") 'hexl-inspect-mode))))
 
 ;;
 ;; Emacs Lisp
@@ -781,6 +790,21 @@ over custom backends."
 ;;
 ;; Verilog
 ;;
+(setopt verilog-indent-level 4)
+(setopt verilog-indent-level-module 4)
+(setopt verilog-indent-level-declaration 4)
+(setopt verilog-indent-level-behavioral 4)
+(setopt verilog-indent-level-directive 0)
+(setopt verilog-cexp-indent 2)
+(setopt verilog-case-indent 2)
+(setopt verilog-indent-begin-after-if nil)
+(setopt verilog-align-ifelse t)
+(setopt verilog-align-decl-expr-comments t)
+(setopt verilog-align-comment-distance 1)
+(setopt verilog-align-assign-expr t)
+(setopt verilog-highlight-grouping-keywords t)
+(setopt verilog-highlight-modules t)
+(setopt verilog-highlight-includes t)
 
 ;;
 ;; MATLAB
@@ -793,6 +817,25 @@ over custom backends."
   :ensure t
   :defer t
   :hook (python-mode . blacken-mode))
+
+(use-package eglot
+  :ensure nil ; built-in
+  :defer t
+  :commands (eglot
+             eglot-ensure
+             eglot-rename
+             eglot-format-buffer)
+  :hook ((python-mode . eglot-ensure))
+  :config
+  (add-to-list 'eglot-server-programs '(python-mode . ("pylsp")))
+  (setq-default eglot-workspace-configuration
+                '((:pylsp . (:plugins (:isort (:enabled t)
+                                              :autopep8 (:enabled nil)
+                                              :yapf (:enabled :json-false)
+                                              :pycodestyle (:enabled t)
+                                              :pyflakes (:enabled t)
+                                              :pydocstyle (:enabled t)
+                                              :mccabe (:enabled t)))))))
 
 ;; -----------------------------------------------------------------------------
 ;; Preferred Keybindings
