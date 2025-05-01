@@ -1,0 +1,3 @@
+[submodule "site-lisp/Emacs-MATLAB-Mode"]
+	path = site-lisp/Emacs-MATLAB-Mode
+	url = git@my.github.com:mathworks/Emacs-MATLAB-Mode.git

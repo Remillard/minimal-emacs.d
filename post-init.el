@@ -798,6 +798,9 @@ over custom backends."
 (setopt verilog-cexp-indent 2)
 (setopt verilog-case-indent 2)
 (setopt verilog-indent-begin-after-if nil)
+(setopt verilog-indent-class-inside-pkg t)
+(setopt verilog-indent-declaration-macros nil)
+(setopt verilog-indent-lists t)
 (setopt verilog-align-ifelse t)
 (setopt verilog-align-decl-expr-comments t)
 (setopt verilog-align-comment-distance 1)
@@ -805,11 +808,14 @@ over custom backends."
 (setopt verilog-highlight-grouping-keywords t)
 (setopt verilog-highlight-modules t)
 (setopt verilog-highlight-includes t)
+(setopt verilog-linter "verible-verilog-lint")
+(setopt verilog-tool verilog-linter)
 
 ;;
 ;; MATLAB
 ;;
-
+(add-to-list 'load-path "~/.emacs.d/site-lisp/Emacs-MATLAB-Mode/")
+(load-library "matlab-autoload")
 ;;
 ;; Python
 ;;
