@@ -182,14 +182,21 @@
 ;; Nerd Icons
 (use-package nerd-icons
   :ensure t
-  :defer t)
-(use-package nerd-icons-dired
-  :ensure t
   :defer t
-  :hook ((dired-mode . nerd-icons-dired-mode))
   :config
   (add-to-list 'nerd-icons-extension-icon-alist
-               '("m" nerd-icons-mdicon "nf-md-alpha_m" :face nerd-icons-red)))
+               '("m" nerd-icons-mdicon "nf-md-alpha_m" :face nerd-icons-red))
+  (add-to-list 'nerd-icons-extension-icon-alist
+               '("vhd" nerd-icons-octicon "nf-oct-cpu" :face nerd-icons-blue))
+  (add-to-list 'nerd-icons-extension-icon-alist
+               '("vhdl" nerd-icons-octicon "nf-oct-cpu" :face nerd-icons-blue))
+  (add-to-list 'nerd-icons-mode-icon-alist
+               '(matlab-mode nerd-icons-mdicon "nf-md-alpha_m" :face nerd-icons-red)))
+
+;; (use-package nerd-icons-dired
+;;   :ensure t
+;;   :defer t
+;;   :hook ((dired-mode . nerd-icons-dired-mode)))
 
 ;; Display the time in the modeline
 (add-hook 'after-init-hook #'display-time-mode)
@@ -812,10 +819,24 @@ over custom backends."
 (setopt verilog-tool verilog-linter)
 
 ;;
+;; Tcl
+;;
+(setq auto-mode-alist
+      (append
+       ;; Quartus Settings File is type Tcl
+       '(("\\.qsf\\'" . tcl-mode)
+         ;; Riviera-Pro/Modelsim Macro Files are type Tcl
+         ("\\.do\\'" . tcl-mode)
+         ;; Timing constrains are type Tcl
+         ("\\.sdc\\'" . tcl-mode))
+       auto-mode-alist))
+
+;;
 ;; MATLAB
 ;;
 (add-to-list 'load-path "~/.emacs.d/site-lisp/Emacs-MATLAB-Mode/")
 (load-library "matlab-autoload")
+
 ;;
 ;; Python
 ;;
