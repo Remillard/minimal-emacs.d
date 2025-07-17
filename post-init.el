@@ -116,6 +116,7 @@
 (setq kept-old-versions 10)
 (setq kept-new-versions 10)
 
+
 ;; -----------------------------------------------------------------------------
 ;; Appearance
 ;; -----------------------------------------------------------------------------
@@ -639,8 +640,15 @@ over custom backends."
 (use-package whole-line-or-region
   :ensure t
   :defer t
-  :hook ((text-mode . whole-line-or-region-local-mode)
-         (prog-mode . whole-line-or-region-local-mode)))
+  :hook (elpaca-after-init . whole-line-or-region-global-mode))
+
+;; Multiple Cursors
+(use-package multiple-cursors
+  :ensure t
+  :defer t
+  :bind (("<C-M-down>" . mc/mark-next-like-this)
+         ("<C-M-up>" . mc/mark-previous-like-this)
+         ("C-M-<mouse-1>" . mc/add-cursor-on-click)))
 
 (use-package ace-window
   :ensure t
@@ -788,6 +796,14 @@ over custom backends."
              elisp-refs-special
              elisp-refs-symbol))
 
+;; Provides a number of language snippet templates
+(add-to-list 'load-path "~/.emacs.d/site-lisp/yasnippet-snippets")
+(add-to-list 'load-path "~/.emacs.d/site-lisp/yasnippet")
+(require 'yasnippet-snippets)
+(require 'yasnippet)
+(yas-global-mode 1)
+(global-set-key (kbd "C-<tab>") 'yas-expand)
+
 ;;
 ;; VHDL
 ;;
@@ -795,28 +811,48 @@ over custom backends."
 (require 'vhdl-mode-config)
 
 ;;
-;; Verilog
+;; Verilog (built-in)
 ;;
-(setopt verilog-indent-level 4)
-(setopt verilog-indent-level-module 4)
-(setopt verilog-indent-level-declaration 4)
-(setopt verilog-indent-level-behavioral 4)
-(setopt verilog-indent-level-directive 0)
-(setopt verilog-cexp-indent 2)
-(setopt verilog-case-indent 2)
-(setopt verilog-indent-begin-after-if nil)
-(setopt verilog-indent-class-inside-pkg t)
-(setopt verilog-indent-declaration-macros nil)
-(setopt verilog-indent-lists t)
-(setopt verilog-align-ifelse t)
-(setopt verilog-align-decl-expr-comments t)
-(setopt verilog-align-comment-distance 1)
-(setopt verilog-align-assign-expr t)
-(setopt verilog-highlight-grouping-keywords t)
-(setopt verilog-highlight-modules t)
-(setopt verilog-highlight-includes t)
-(setopt verilog-linter "verible-verilog-lint")
-(setopt verilog-tool verilog-linter)
+(use-package verilog-mode
+  :ensure f
+  :defer f
+  :custom
+  (verilog-indent-level 4)
+  (verilog-indent-level-module 4)
+  (verilog-indent-level-declaration 4)
+  (verilog-indent-level-behavioral 4)
+  (verilog-indent-level-directive 0)
+  (verilog-cexp-indent 2)
+  (verilog-case-indent 2)
+  (verilog-indent-begin-after-if nil)
+  (verilog-indent-class-inside-pkg t)
+  (verilog-indent-declaration-macros nil)
+  (verilog-indent-lists nil)
+  (verilog-align-ifelse t)
+  (verilog-align-decl-expr-comments t)
+  (verilog-align-comment-distance 1)
+  (verilog-align-assign-expr t)
+  (verilog-highlight-grouping-keywords t)
+  (verilog-highlight-modules t)
+  (verilog-highlight-includes t)
+  (verilog-auto-lineup 'all)
+  (verilog-auto-newline nil)
+  :config
+  (setq verilog-align-typedef-regexp (concat "\\<" verilog-identifier-re "_\\(t\\)\\>")))
+;;(setopt verilog-align-typedef-regexp (concat "\\<" verilog-identifier-re "_\\(t\\)\\>"))
+;; Additional Verilog/SystemVerilog capabilities
+(use-package verilog-ext
+  :ensure t
+  :defer t
+  :hook (verilog-mode . verilog-ext-mode)
+  :init
+  ;; Can also be set through `M-x RET customize-group RET verilog-ext':
+  ;; Comment out/remove the ones you do not need
+  (setq verilog-ext-feature-list
+        '(beautify
+          imenu))
+  :config
+  (verilog-ext-mode-setup))
 
 ;;
 ;; Tcl
@@ -877,6 +913,8 @@ over custom backends."
 (global-unset-key (kbd "C-<wheel-down>"))
 ;; I never use the brief list directory and I always mistype for dired
 (global-set-key (kbd "C-x C-d") 'dired)
+;; Prefer ibuffer to list-buffers
+(global-set-key (kbd "C-x C-b") 'ibuffer)
 
 ;; Shortcuts for dealing with compilation.
 (global-set-key (kbd "<f1>") 'next-error)

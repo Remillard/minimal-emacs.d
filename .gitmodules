@@ -1,3 +1,9 @@
 [submodule "site-lisp/Emacs-MATLAB-Mode"]
 	path = site-lisp/Emacs-MATLAB-Mode
 	url = git@my.github.com:mathworks/Emacs-MATLAB-Mode.git
+[submodule "site-lisp/yasnippet"]
+	path = site-lisp/yasnippet
+	url = https://github.com/joaotavora/yasnippet.git
+[submodule "site-lisp/yasnippet-snippets"]
+	path = site-lisp/yasnippet-snippets
+	url = https://github.com/AndreaCrotti/yasnippet-snippets.git

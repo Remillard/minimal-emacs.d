@@ -21,7 +21,6 @@
 # -------------------------------------------------------
 autosave/
 elpaca/
-var/
 custom.el
 history
 bookmarks
@@ -31,5 +30,10 @@ saveplace
 srecode-map.el
 site-lisp/local-settings.el
 site-lisp/local-vhdl-proj.el
+# Generally want to ignore all of var, but custom snippets
+# end up here.
+var/*
+!var/snippets/
+!var/tree-sitter/
 
 
