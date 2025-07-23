@@ -745,11 +745,14 @@ over custom backends."
   (require 'smartparens-config))
 
 ;; Symbol overlay is a package that helps manipulate symbols under the point.
+;; Not sure why I couldn't bind the remove all in the :bind macro.
 (use-package symbol-overlay
   :ensure t
   :defer t
   :bind (("<f9>" . symbol-overlay-put))
-  :hook ((prog-mode . symbol-overlay-mode)))
+  :hook ((prog-mode . symbol-overlay-mode))
+  :config
+  (global-set-key (kbd "<f10>") 'symbol-overlay-remove-all))
 
 ;; Hexl Inspect is a minor mode to Hexl that provides inspection data at the
 ;; point

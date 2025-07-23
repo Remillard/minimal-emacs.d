@@ -6,4 +6,4 @@ function ${3:$$(yas-choose-value '("static" "automatic"))} ${2:type} ${1:name} (
     $0
 );
 
-endtask : $1
+endfunction : $1
