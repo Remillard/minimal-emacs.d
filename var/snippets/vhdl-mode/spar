@@ -1,0 +1,13 @@
+# -*- mode: snippet -*-
+# name: Sync Process w/ Async Reset
+# key: spar
+# --
+${1:LABEL} : process (${2:clk}, ${3:reset})
+begin
+    if (${3} = '${4:1}') then 
+        -- do reset things
+        $0
+    elsif rising_edge(${2}) then
+
+    end if;
+end process ${1};

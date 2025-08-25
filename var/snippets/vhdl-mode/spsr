@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: Sync Process w/ Sync Reset
+# key: spsr
+# --
+${1:LABEL} : process (${2:clk}, ${3:reset})
+begin
+    if rising_edge(${2}) then
+        if (${3} = '${4:1}') then
+            -- do reset things
+            $0
+        else
+
+        end if;       
+    end if;
+end process ${1};

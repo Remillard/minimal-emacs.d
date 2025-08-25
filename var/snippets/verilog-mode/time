@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: time
+# key: time
+# --
+timeunit 1ns; timeprecision 1ns;
+$0

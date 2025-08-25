@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: TextIO Libraries
+# key: textio
+# --
+use std.textio.all;
+use ieee.std_logic_textio.all;
+$0
