@@ -939,13 +939,13 @@ over custom backends."
 (define-key dired-mode-map "r" 'dired-kill-subdir)
 
 ;; Prefer ibuffer and bufler in general
+;; When preferring ibuffer to list-buffers
+;;(global-set-key (kbd "C-x C-b") 'ibuffer)
+;; Otherwise use Bufler
 (use-package bufler
   :ensure t
-  :defer t)
-;;Prefer ibuffer to list-buffers
-;;(global-set-key (kbd "C-x C-b") 'ibuffer)
-(require 'bufler)
-(global-set-key (kbd "C-x C-b") 'bufler)
+  :defer nil
+  :bind (("C-x C-b" . bufler-list)))
 
 ;; Shortcuts for dealing with compilation.
 (global-set-key (kbd "<f1>") 'next-error)
