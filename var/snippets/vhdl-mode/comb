@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: Pure Combinatorial Process
+# key: comb
+# --
+${1:LABEL} : process (all)
+begin
+    $0
+end process ${1};

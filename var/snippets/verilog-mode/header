@@ -1,0 +1,39 @@
+# -*- mode: snippet -*-
+# name: header
+# key: header
+# --
+/* -------------------------------------------------------------------------------
+    Entity      : ${1}
+    Project     : ${2}
+    Author      : Mark Norton  <mark.norton@garmin.com>
+    Created     : `(format-time-string "%a %b %d %H:%M:%S %Y")`
+    Company     : Garmin International
+    Copyright   : Copyright 2025 by Garmin Ltd. or its subsidiaries
+    Repo        : 
+    Directory   : `(when (buffer-file-name) (file-name-directory (buffer-file-name)))`
+    File        : `(buffer-name)`
+    Standard    : SystemVerilog 1800-2017
+    ----------------------------------------------------------------------------
+    
+    Description: $0
+    
+    ----------------------------------------------------------------------------
+    Hierarchy By Level:
+    ----------------------------------------------------------------------------
+    Naming Conventions used:
+    Active Low:             "*_n"
+    Clocks:                 "clk", "clk*", "_clk",
+    Resets:                 "*_rst", "*_reset"
+    Generics:               "G_*"
+    Constants:              "C_*"
+    User defined types:     "_t"
+    Inputs:                 "*_i", "i_*"
+    Outputs:                "*_o", "o_*"
+    Bidirectional           "*_io", "io_*"
+    Counter Signals:        "*_cnt", "counter"
+    Shift registers:        "*_sr"
+    Register delay signals: "*_d#"
+    Clock enable signals:   "*_ce"
+    Processes:              "*_PROC"
+------------------------------------------------------------------------------- */
+

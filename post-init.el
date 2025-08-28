@@ -905,21 +905,47 @@ over custom backends."
                                               :pydocstyle (:enabled t)
                                               :mccabe (:enabled t)))))))
 
+(add-to-list 'load-path "~/.emacs.d/site-lisp/vscode-cp-proxy/")
+(use-package gptel
+  :ensure t
+  :defer t
+  :config
+  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
+  (add-hook 'gptel-post-response-functions 'gptel-end-of-response)
+  (setq gptel-default-mode 'org-mode)
+  (require 'vscode-cp-proxy))
+
+
 ;; -----------------------------------------------------------------------------
-;; Preferred Keybindings
+;; Preferred Keybindings where not specified elsewhere
 ;; -----------------------------------------------------------------------------
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-regexp)
 (global-set-key (kbd "C-M-s") 'isearch-forward-symbol-at-point)
+
 ;; Unbinding the mouse scroll wheel text adjust.
 ;; Remember C-x C-M-0 for global text scale adjust!!!
 (global-unset-key (kbd "C-<wheel-up>"))
 (global-unset-key (kbd "C-<wheel-down>"))
+
 ;; I never use the brief list directory and I always mistype for dired
 (global-set-key (kbd "C-x C-d") 'dired)
-;; Prefer ibuffer to list-buffers
-(global-set-key (kbd "C-x C-b") 'ibuffer)
+
+;; There is no keybinding for removing an inserted subdirectory standard. If `i'
+;; works for dired-maybe-insert-subdir, then `r' is for `remove'
+;; dired-kill-subdir.
+(require 'dired)
+(define-key dired-mode-map "r" 'dired-kill-subdir)
+
+;; Prefer ibuffer and bufler in general
+(use-package bufler
+  :ensure t
+  :defer t)
+;;Prefer ibuffer to list-buffers
+;;(global-set-key (kbd "C-x C-b") 'ibuffer)
+(require 'bufler)
+(global-set-key (kbd "C-x C-b") 'bufler)
 
 ;; Shortcuts for dealing with compilation.
 (global-set-key (kbd "<f1>") 'next-error)
