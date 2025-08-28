@@ -42,6 +42,9 @@ in `init.el'.  Several frequent variations:
   - Consolas 12
   - Cascadia Code Light 11
   - Fira Code 11")
+;; Sometimes necessary based on local font settings.  Some examples
+;;(setq nerd-icons-font-family "Symbols Nerd Font Mono")
+;;(setq nerd-icons-font-family "FiraCode Nerd Font Mono")
 
 (defvar local-starting-frame-max t
   "the LOCAL-STARTING-FRAME-MAX boolean variable is used to pick between a

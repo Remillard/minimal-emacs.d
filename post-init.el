@@ -185,7 +185,6 @@
   :ensure t
   :defer t
   :config
-  (setq nerd-icons-font-family "FiraCode Nerd Font Mono")
   (add-to-list 'nerd-icons-extension-icon-alist
                '("m" nerd-icons-mdicon "nf-md-alpha_m" :face nerd-icons-red))
   (add-to-list 'nerd-icons-extension-icon-alist
