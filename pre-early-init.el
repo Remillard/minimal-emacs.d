@@ -9,8 +9,17 @@
 ;; -----------------------------------------------------------------------------
 ;; Emacs file clutter
 ;; -----------------------------------------------------------------------------
-;; Reducing clutter in ~/.emacs.d by redirecting files to ~/emacs.d/var/
-;; IMPORTANT: This part should be in the pre-early-init.el file
+;; Reducing clutter in ~/.emacs.d by redirecting files to ~/emacs.d/var/ as a
+;; great deal of functionality keys off of the user-emacs-directory variable.
+;; Reassigning this will put most non-repository saving things in /var. However
+;; I need to remember where the directory originally is so I don't have to
+;; hardcode things for my shortcut to the init files and I have my site-lisp for
+;; permanent modules, so creating variables for my own use for those before
+;; reassignment.
+;; 
+;; IMPORTANT: This part should be in the pre-early-init.el file. 
+(setq user-emacs-orig-dir user-emacs-directory)
+(setq user-site-lisp-dir (expand-file-name "site-lisp/" user-emacs-orig-dir))
 (setq minimal-emacs-var-dir (expand-file-name "var/" minimal-emacs-user-directory))
 (setq package-user-dir (expand-file-name "elpa" minimal-emacs-var-dir))
 (setq user-emacs-directory minimal-emacs-var-dir)

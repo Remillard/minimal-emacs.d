@@ -4,7 +4,7 @@
 ;; Localization Variables
 ;; -----------------------------------------------------------------------------
 ;; External file for local settings
-(add-to-list 'load-path "~/.emacs.d/site-lisp/")
+(add-to-list 'load-path user-site-lisp-dir)
 (require 'local-settings)
 (setq user-full-name local-full-name)
 (setq user-mail-address local-user-mail-address)
@@ -185,6 +185,7 @@
   :ensure t
   :defer t
   :config
+  (setq nerd-icons-font-family "FiraCode Nerd Font Mono")
   (add-to-list 'nerd-icons-extension-icon-alist
                '("m" nerd-icons-mdicon "nf-md-alpha_m" :face nerd-icons-red))
   (add-to-list 'nerd-icons-extension-icon-alist
@@ -288,7 +289,8 @@ over custom backends."
 ;; Org Mode
 ;; -----------------------------------------------------------------------------
 (use-package org
-  :ensure (:host "git.savannah.gnu.org" :repo "git/emacs/org-mode")
+  ;;:ensure (:host "git.savannah.gnu.org" :repo "git/emacs/org-mode")
+  :ensure (:host "github.com" :repo "emacs-straight/org-mode")
   :demand t
   :commands (org-mode org-version)
   :bind (("C-c c" . org-capture)
@@ -727,7 +729,7 @@ over custom backends."
 ;;
 ;; General
 ;;
-(setopt explicit-shell-file-name "c:/Program Files/PowerShell/7/pwsh.exe")
+;;(setopt explicit-shell-file-name "c:/Program Files/PowerShell/7/pwsh.exe")
 
 ;; Colorizes matching pairs of delimeters
 (use-package rainbow-delimiters
@@ -800,8 +802,8 @@ over custom backends."
              elisp-refs-symbol))
 
 ;; Provides a number of language snippet templates
-(add-to-list 'load-path "~/.emacs.d/site-lisp/yasnippet-snippets")
-(add-to-list 'load-path "~/.emacs.d/site-lisp/yasnippet")
+(add-to-list 'load-path (expand-file-name "yasnippet-snippets" user-site-lisp-dir))
+(add-to-list 'load-path (expand-file-name "yasnippet" user-site-lisp-dir))
 (require 'yasnippet-snippets)
 (require 'yasnippet)
 (yas-global-mode 1)
@@ -873,7 +875,7 @@ over custom backends."
 ;;
 ;; MATLAB
 ;;
-(add-to-list 'load-path "~/.emacs.d/site-lisp/Emacs-MATLAB-Mode/")
+(add-to-list 'load-path (expand-file-name "Emacs-MATLAB-Mode" user-site-lisp-dir))
 (load-library "matlab-autoload")
 
 ;;
@@ -939,7 +941,7 @@ Moves back to the original window."
 (defun find-config ()
   "Edit init.el"
   (interactive)
-  (find-file "~/.emacs.d/post-init.el"))
+  (find-file (expand-file-name "post-init.el" user-emacs-orig-dir)))
 (global-set-key (kbd "C-c I") 'find-config)
 
 ;; Insert a time stamp in buffers that don't support C-c . like org.
