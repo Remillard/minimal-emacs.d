@@ -45,7 +45,8 @@
         vhdl-upper-case-enum-values t
         vhdl-use-direct-instantiation 'always
         vhdl-compiler "ModelSim"
-        vhdl-platform-spec "Sim: Questasim, Synth: Vendor Toolchain (Quartus/Vivado)")
+        vhdl-platform-spec "Sim: Questasim, Synth: Vendor Toolchain (Quartus/Vivado)"
+        vhdl-instance-name (cons ".*" "u_\\&_%d"))
 
 (setopt vhdl-company-name local-vhdl-company-name)
 ;;

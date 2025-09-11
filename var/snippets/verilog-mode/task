@@ -2,7 +2,7 @@
 # name: task
 # key: task
 # --
-task ${2:lifetime} ${1:name} (
+task ${2:$$(yas-choose-value '("static" "automatic"))} ${1:name} (
     $0
 );
 
