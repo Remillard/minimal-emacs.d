@@ -49,6 +49,10 @@
 ;; -----------------------------------------------------------------------------
 ;; Generalized Settings: Recent Files, History, Revert, Autosave, Misc
 ;; -----------------------------------------------------------------------------
+;; Setting it so it asks before closing because I keep accidentally killing the
+;; whole damn thing.
+(setq confirm-kill-emacs 'yes-or-no-p)
+
 ;; Auto-revert in Emacs is a feature that automatically updates the
 ;; contents of a buffer to reflect changes made to the underlying file
 ;; on disk.
@@ -762,6 +766,13 @@ over custom backends."
   :defer t
   :hook (hexl-mode . (lambda () (define-key hexl-mode-map (kbd "C-c i") 'hexl-inspect-mode))))
 
+;; Gentle handling of white space, only making sure edited lines are
+;; trimmed.
+(use-package ws-butler
+  :ensure t
+  :defer t
+  :hook (prog-mode . ws-butler-mode))
+
 ;;
 ;; Emacs Lisp
 ;;
@@ -911,7 +922,7 @@ over custom backends."
   :config
   (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
   (add-hook 'gptel-post-response-functions 'gptel-end-of-response)
-  (setq gptel-default-mode 'org-mode)
+  (setq gptel-default-mode 'markdown-mode)
   (require 'vscode-cp-proxy))
 
 
