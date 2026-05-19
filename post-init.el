@@ -88,8 +88,8 @@
 ;; `recover-session' to restore unsaved changes.
 (setq auto-save-default t)
 
-(setq auto-save-interval 300)
-(setq auto-save-timeout 30)
+(setq auto-save-interval 300)  ;; keystrokes between auto-saves
+(setq auto-save-timeout 30)    ;; seconds of idle before auto-save
 
 ;; Miscellaneous Settings (global variables)
 (setq inhibit-startup-screen t               ;; Just go directly to initial buffer
@@ -227,15 +227,17 @@
 (use-package dashboard
   :ensure t
   :defer t
+  :custom
+  (dashboard-projects-backend 'project-el)
+  (dashboard-agenda-sort-strategy '(time-up))
+  (dashboard-items '((agenda . 5)
+                     (bookmarks . 5)
+                     (projects . 5)
+                     (recents . 5)))
+  (dashboard-icon-type 'nerd-icons)
   :config
-  (setq dashboard-projects-backend 'project-el)
-  (setq initial-buffer-choice (lambda () (get-buffer-create dashboard-buffer-name)))
-  (setq dashboard-agenda-sort-strategy '(time-up))
-  (setq dashboard-items '((agenda . 5)
-                          (bookmarks . 5)
-                          (projects . 5)
-                          (recents . 5)))
-  (setq dashboard-icon-type 'nerd-icons))
+  ;; initial-buffer-choice references dashboard-buffer-name so stays in :config
+  (setq initial-buffer-choice (lambda () (get-buffer-create dashboard-buffer-name))))
 
 (add-hook 'elpaca--post-queues-hook #'(lambda()
                                         (dashboard-open)))
@@ -356,7 +358,7 @@ over custom backends."
 (use-package org-appear
   :ensure t
   :defer t
-  :requires org
+  :after org
   :hook org-mode
   :custom
   (org-appear-autoemphasis t)
@@ -370,7 +372,7 @@ over custom backends."
 (use-package denote
   :ensure t
   :demand t
-  :requires org
+  :after org
   :bind (("C-c n n" . denote-create-note)
          ("C-c n l" . denote-link)
          ("C-c n d" . denote-date))
@@ -794,14 +796,12 @@ over custom backends."
   (require 'smartparens-config))
 
 ;; Symbol overlay is a package that helps manipulate symbols under the point.
-;; Not sure why I couldn't bind the remove all in the :bind macro.
 (use-package symbol-overlay
   :ensure t
   :defer t
-  :bind (("<f9>" . symbol-overlay-put))
-  :hook ((prog-mode . symbol-overlay-mode))
-  :config
-  (global-set-key (kbd "<f10>") 'symbol-overlay-remove-all))
+  :bind (("<f9>"  . symbol-overlay-put)
+         ("<f10>" . symbol-overlay-remove-all))
+  :hook ((prog-mode . symbol-overlay-mode)))
 
 ;; Hexl Inspect is a minor mode to Hexl that provides inspection data at the
 ;; point
@@ -879,7 +879,7 @@ over custom backends."
 ;; Verilog (built-in)
 ;;
 (use-package verilog-mode
-  :ensure f
+  :ensure nil
   :defer nil
   :custom
   (verilog-indent-level 4)
@@ -1097,13 +1097,13 @@ Moves back to the original window."
 
 ;; Shortcut to post-init.el
 (defun find-config ()
-  "Edit init.el"
+  "Edit post-init.el"
   (interactive)
   (find-file (expand-file-name "post-init.el" user-emacs-orig-dir)))
 (global-set-key (kbd "C-c I") 'find-config)
 
 ;; Insert a time stamp in buffers that don't support C-c . like org.
 (defun insert-time-stamp ()
-  "Inserts a time stamp 'YYYY-MM-DD HH:MM AM/PM'"
+  "Insert a timestamp at point, format: Weekday Mon Day YYYY HH:MM:SS."
   (interactive)
   (insert (format-time-string "%a %b %e %Y %H:%M:%S")))
