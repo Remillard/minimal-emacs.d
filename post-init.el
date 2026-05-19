@@ -112,7 +112,8 @@
 
 ;; Dired Settings - Permits use of 'a' in dired.
 (put 'dired-find-alternate-file 'disabled nil)
-(setq dired-listing-switches "-aBhl --group-directories-first")
+(setq dired-listing-switches "-aBhl")
+(setq ls-lisp-dirs-first t)
 
 ;; Unbind suspend-frame command
 (global-unset-key (kbd "C-x C-z"))
@@ -210,9 +211,6 @@
 ;; Display the time in the modeline
 (add-hook 'after-init-hook #'display-time-mode)
 
-;; Track changes in the window configuration allowing undoing actions
-;; such as closing windows.
-(add-hook 'after-init-hook #'winner-mode)
 
 ;; Ensures buffer names are unique
 (use-package uniquify
@@ -229,7 +227,6 @@
   :ensure t
   :defer t
   :config
-  (dashboard-setup-startup-hook)
   (setq dashboard-projects-backend 'project-el)
   (setq initial-buffer-choice (lambda () (get-buffer-create dashboard-buffer-name)))
   (setq dashboard-agenda-sort-strategy '(time-up))
@@ -739,10 +736,8 @@ over custom backends."
              undo-fu-only-redo
              undo-fu-only-redo-all
              undo-fu-disable-checkpoint)
-  :config
-  (global-unset-key (kbd "C-z"))
-  (global-set-key (kbd "C-z") 'undo-fu-only-undo)
-  (global-set-key (kbd "C-S-z") 'undo-fu-only-redo))
+  :bind (("C-z"   . undo-fu-only-undo)
+         ("C-S-z" . undo-fu-only-redo)))
 
 ;; The undo-fu-session package complements undo-fu by enabling the saving
 ;; and restoration of undo history across Emacs sessions, even after restarting.
