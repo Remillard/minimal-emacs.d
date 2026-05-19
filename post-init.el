@@ -4,6 +4,7 @@
 ;; Localization Variables
 ;; -----------------------------------------------------------------------------
 ;; External file for local settings
+(message "---- Localization Variables ----")
 (add-to-list 'load-path user-site-lisp-dir)
 (require 'local-settings)
 (setq user-full-name local-full-name)
@@ -20,6 +21,7 @@
 ;; -----------------------------------------------------------------------------
 ;; Ensure adding the following compile-angel code at the very beginning
 ;; of your `~/.emacs.d/post-init.el` file, before all other packages.
+(message "---- Compile Angel ----")
 (use-package compile-angel
   :ensure t
   :demand t
@@ -51,6 +53,7 @@
 ;; -----------------------------------------------------------------------------
 ;; Setting it so it asks before closing because I keep accidentally killing the
 ;; whole damn thing.
+(message "---- General Settings ----")
 (setq confirm-kill-emacs 'yes-or-no-p)
 
 ;; Auto-revert in Emacs is a feature that automatically updates the
@@ -124,6 +127,7 @@
 ;; -----------------------------------------------------------------------------
 ;; Appearance
 ;; -----------------------------------------------------------------------------
+(message "---- Appearance ----")
 ;;
 ;; Font(s)  Selection made in local-settings.el
 ;;
@@ -262,6 +266,7 @@ over custom backends."
 ;; -----------------------------------------------------------------------------
 ;; Magit
 ;; -----------------------------------------------------------------------------
+(message "---- Magit ----")
 ;; Forcing transient to be newer due to Magit requirements.
 (use-package transient
   :ensure (:host github :repo "magit/transient")
@@ -291,6 +296,7 @@ over custom backends."
 ;; -----------------------------------------------------------------------------
 ;; Org Mode
 ;; -----------------------------------------------------------------------------
+(message "---- Org Mode ----")
 (use-package org
   ;;:ensure (:host "git.savannah.gnu.org" :repo "git/emacs/org-mode")
   :ensure (:host "github.com" :repo "emacs-straight/org-mode")
@@ -386,6 +392,7 @@ over custom backends."
 ;; -----------------------------------------------------------------------------
 ;; Completion Packages
 ;; -----------------------------------------------------------------------------
+(message "---- Completion Packages ----")
 (use-package corfu
   :ensure t
   :defer t
@@ -552,7 +559,7 @@ over custom backends."
 
 (use-package consult
   :ensure t
-  :defer
+  :defer t
   :bind (;; C-c bindings in `mode-specific-map'
          ("C-c M-x" . consult-mode-command)
          ("C-c h" . consult-history)
@@ -635,6 +642,7 @@ over custom backends."
 ;; -----------------------------------------------------------------------------
 ;; Editing General
 ;; -----------------------------------------------------------------------------
+(message "---- General Editing ----")
 ;; MoveText - Permits M-<up>/<down> on lines or regions to easily move... text
 (use-package move-text
   :ensure t
@@ -655,10 +663,72 @@ over custom backends."
          ("<C-M-up>" . mc/mark-previous-like-this)
          ("C-M-<mouse-1>" . mc/add-cursor-on-click)))
 
+;; Snippet of code that links ace-window and dired
+;;
+;; Source - https://stackoverflow.com/a/47624310
+;; Posted by Wolfgang
+;; Retrieved 2026-03-25, License - CC BY-SA 3.0
 (use-package ace-window
   :ensure t
-  :defer t
-  :bind (("M-o" . ace-window)))
+  :bind (("M-o" . ace-window))
+  :config
+  (defun find-file-ace-window ()
+    "Use ace window to select a window for opening a file from dired."
+    (interactive)
+    (let ((file (dired-get-file-for-visit)))
+      (if (> (length (aw-window-list)) 1)
+          (aw-select "" (lambda (window)
+                          (aw-switch-to-window window)
+                          (find-file file)))
+        (find-file-other-window file))))
+  (define-key dired-mode-map "o" 'find-file-ace-window))
+
+;;
+;; dired subtree
+;;
+(use-package dired-subtree
+  :ensure t
+  :config
+  (bind-keys :map dired-mode-map
+             ("i" . dired-subtree-insert)
+             (";" . dired-subtree-remove)))
+
+;; Additional window control
+;; Activities for saving window configurations
+;; (use-package activities
+;;   :init
+;;   (activities-mode)
+;;   (activities-tabs-mode)
+;;   ;; Prevent `edebug' default bindings from interfering.
+;;   (setq edebug-inhibit-emacs-lisp-mode-bindings t)
+;;
+;;   :bind
+;;   (("C-x C-a C-n" . activities-new)
+;;    ("C-x C-a C-d" . activities-define)
+;;    ("C-x C-a C-a" . activities-resume)
+;;    ("C-x C-a C-s" . activities-suspend)
+;;    ("C-x C-a C-k" . activities-kill)
+;;    ("C-x C-a RET" . activities-switch)
+;;    ("C-x C-a b" . activities-switch-buffer)
+;;    ("C-x C-a g" . activities-revert)
+;;    ("C-x C-a l" . activities-list)))
+
+;;(define-key ibuffer-mode-map (kbd "M-o") nil)
+
+;; Adds a function to make C-x 1 enbiggen a window, then
+;; use it again to restore the original layout.
+(winner-mode +1)
+
+;; (defun toggle-delete-other-windows ()
+;;   "Delete other windows in frame if any, or restore previous window config."
+;;   (interactive)
+;;   (if (and winner-mode
+;;            (equal (selected-window) (next-window)))
+;;       (winner-undo)
+;;     (delete-other-windows)))
+;; 
+;; (global-set-key (kbd "C-x 1") #'toggle-delete-other-windows)
+
 
 ;; The undo-fu package is a lightweight wrapper around Emacs' built-in undo
 ;; system, providing more convenient undo/redo functionality.
@@ -729,6 +799,7 @@ over custom backends."
 ;; -----------------------------------------------------------------------------
 ;; Programming Packages and Settings
 ;; -----------------------------------------------------------------------------
+(message "---- Programming ----")
 ;;
 ;; General
 ;;
@@ -772,6 +843,12 @@ over custom backends."
   :ensure t
   :defer t
   :hook (prog-mode . ws-butler-mode))
+
+;; Indent bars stipple
+(use-package indent-bars
+  :ensure t
+  :defer t
+  :hook ((prog-mode) . indent-bars-mode))
 
 ;;
 ;; Emacs Lisp
@@ -830,7 +907,7 @@ over custom backends."
 ;;
 (use-package verilog-mode
   :ensure f
-  :defer f
+  :defer nil
   :custom
   (verilog-indent-level 4)
   (verilog-indent-level-module 4)
@@ -876,6 +953,8 @@ over custom backends."
       (append
        ;; Quartus Settings File is type Tcl
        '(("\\.qsf\\'" . tcl-mode)
+         ;; Xilinx Constraints File (*.xdc) is type Tcl
+         ("\\.xdc\\'" . tcl-mode)
          ;; Riviera-Pro/Modelsim Macro Files are type Tcl
          ("\\.do\\'" . tcl-mode)
          ;; Timing constrains are type Tcl
@@ -893,8 +972,7 @@ over custom backends."
 ;;
 (use-package blacken
   :ensure t
-  :defer t
-  :hook (python-mode . blacken-mode))
+  :defer t)
 
 (use-package eglot
   :ensure nil ; built-in
@@ -915,20 +993,65 @@ over custom backends."
                                               :pydocstyle (:enabled t)
                                               :mccabe (:enabled t)))))))
 
-(add-to-list 'load-path "~/.emacs.d/site-lisp/vscode-cp-proxy/")
-(use-package gptel
-  :ensure t
-  :defer t
-  :config
-  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
-  (add-hook 'gptel-post-response-functions 'gptel-end-of-response)
-  (setq gptel-default-mode 'markdown-mode)
-  (require 'vscode-cp-proxy))
+;;
+;; Powershell
+;;
+(use-package powershell
+  :ensure t)
 
+;;
+;; Github Enterprise Copilot
+;;
+;; (add-to-list 'load-path "~/.emacs.d/site-lisp/vscode-cp-proxy/")
+;; (use-package gptel
+;;   :ensure t
+;;   :defer f
+;;   :config
+;;   (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
+;;   (add-hook 'gptel-post-response-functions 'gptel-end-of-response)
+;;   (setq gptel-default-mode 'markdown-mode)
+;;   (require 'vscode-cp-proxy)
+;;   (gptel-make-preset 'cs45-fpga-hdl
+;;   :description "A preset optimized for FPGA HDL coding tasks."
+;;   :backend "gptel-vscode-cp-proxy"
+;;   :model 'claude-sonnet-4.5
+;;   :system "You are a seasoned professional electrical engineer specializing in FPGA
+;; design with HDL languages of VHDL and SystemVerilog, both in the design
+;; space and verification space. Provide assistance with a direct, concise,
+;; and authoritative voice, however some conversational habits may be
+;; acceptable. Produce logical segmentation of your response with headings,
+;; steps, and lists where appropriate. You will prioritize signal over
+;; style. Each paragraph advances understanding. You will speak as a peer,
+;; not an explainer. Responses should be medium depth by default unless
+;; otherwise specified (code examples may exceed this limit). You will
+;; identify the current state explicitly, and define the target state
+;; clearly. Break any solution into discrete, ordered actions, identifying
+;; preconditions for each action and defining the effects of each action.
+;; You will estimate the cost of action for time, complexity, and risk to
+;; each action. Evaluate multiple solution paths and optimize for the
+;; lowest cost path that satisfies all preconditions, identifying critical
+;; dependencies and bottlenecks. After solving, identify what worked and
+;; what didn't, then extract reusable patterns for similar problems.
+;; Combine structured logic with adaptive pattern recognition, and show you
+;; work. Make reasoning steps explicit. Prefer reversible decisions early,
+;; commit decisively later. When stuck, reframe the goal or reassess the
+;; state. The primary languages are VHDL and SystemVerilog, however
+;; scripting languages such as Tcl, Powershell, Makefiles, elisp and more
+;; are well known and understood. Provide concrete, actionable guidance and
+;; use examples where helpful. Avoid over-explanation of basics unless
+;; explicitly asked for confirmation."
+;;   :tools 'nil
+;;   :stream t
+;;   :temperature 1.0
+;;   :max-tokens nil
+;;   :use-context 'system
+;;   :track-media nil
+;;   :include-reasoning t))
 
 ;; -----------------------------------------------------------------------------
 ;; Preferred Keybindings where not specified elsewhere
 ;; -----------------------------------------------------------------------------
+(message "---- Keybindings and Buffers ----")
 (global-set-key (kbd "C-x C-r") 'recentf-open-files)
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-regexp)
@@ -951,11 +1074,36 @@ over custom backends."
 ;; Prefer ibuffer and bufler in general
 ;; When preferring ibuffer to list-buffers
 ;;(global-set-key (kbd "C-x C-b") 'ibuffer)
-;; Otherwise use Bufler
+;;Remove the M-o from ibuffer as it interferes with
+;;ace-window
+;;(define-key ibuffer-mode-map (kbd "M-o") nil)
+
+;; Bufler replacement for buffer management
 (use-package bufler
-  :ensure t
-  :defer nil
-  :bind (("C-x C-b" . bufler-list)))
+ :ensure t
+ :defer nil
+ :hook (bufler-list-mode . (lambda () (setq-local font-lock-unfontify-region-function #'ignore)))
+ :bind (("C-x C-b" . bufler-list)
+        :map bufler-list-mode-map
+        ("RET" . bufler-list-buffer-switch-ace-window))
+ :config
+ (defun bufler-list-buffer-switch-ace-window ()
+   "Switch to the Bufler buffer at point using ace-window to select target window.
+On a buffer line: if multiple windows exist, invoke ace-window selection;
+otherwise fall back to the standard `bufler-list-switch-buffer-action'.
+On a group header line: toggle section visibility (fold/unfold)."
+   (interactive)
+   (let* ((section (magit-current-section))
+          (value   (oref section value)))
+     (if (bufferp value)
+         ;; Buffer line: ace-window pick or fallback
+         (if (> (length (aw-window-list)) 1)
+             (aw-select "" (lambda (window)
+                             (aw-switch-to-window window)
+                             (switch-to-buffer value)))
+           (pop-to-buffer value bufler-list-switch-buffer-action))
+       ;; Group header line: toggle fold
+       (magit-section-toggle section)))))
 
 ;; Shortcuts for dealing with compilation.
 (global-set-key (kbd "<f1>") 'next-error)
@@ -985,5 +1133,3 @@ Moves back to the original window."
   "Inserts a time stamp 'YYYY-MM-DD HH:MM AM/PM'"
   (interactive)
   (insert (format-time-string "%a %b %e %Y %H:%M:%S")))
-
-

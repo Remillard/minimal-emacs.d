@@ -10,3 +10,6 @@
 [submodule "vscode-cp-proxy"]
 	path = site-lisp/vscode-cp-proxy
 	url = https://github.com/utsahi/vscode-cp-proxy.git
+[submodule "site-lisp/sysinfo"]
+	path = site-lisp/sysinfo
+	url = git@my.github.com:p-kolacz/sysinfo.git
