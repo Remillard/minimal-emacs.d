@@ -1088,6 +1088,7 @@ On a buffer line: if multiple windows exist, invoke ace-window selection;
 otherwise fall back to the standard `bufler-list-switch-buffer-action'.
 On a group header line: toggle section visibility (fold/unfold)."
    (interactive)
+   (require 'ace-window)
    (let* ((section (magit-current-section))
           (value   (oref section value)))
      (if (bufferp value)
