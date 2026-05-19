@@ -91,20 +91,21 @@
 (setq auto-save-interval 300)
 (setq auto-save-timeout 30)
 
-;; Miscellaneous Settings
-(setq-default
- inhibit-startup-screen t               ;; Just go directly to initial buffer
- column-number-mode t                   ;; Shows row and column on the modeline
- delete-by-moving-to-trash t            ;; Deletes files to OS trash
- indent-tabs-mode nil                   ;; Tab inserts spaces instead of tabs
- display-time-day-and-date t            ;; For display-time-mode, also show the day.
- tab-width 4                            ;; Tab spacing defined to 4 spaces
- ring-bell-function 'ignore             ;; No bell
- use-short-answers t                    ;; Permit 'y' or 'n' instead of 'yes' or 'no'
- fill-column 80                         ;; Autowrap functions to column 80
- dired-dwim-target t                    ;; Prefers dired in another window
- help-window-select t                   ;; I think this auto selects pop up windows.
- read-process-output-max (* 1024 1024)) ;; Increase read size for data chunks.
+;; Miscellaneous Settings (global variables)
+(setq inhibit-startup-screen t               ;; Just go directly to initial buffer
+      column-number-mode t                   ;; Shows row and column on the modeline
+      delete-by-moving-to-trash t            ;; Deletes files to OS trash
+      display-time-day-and-date t            ;; For display-time-mode, also show the day.
+      ring-bell-function 'ignore             ;; No bell
+      use-short-answers t                    ;; Permit 'y' or 'n' instead of 'yes' or 'no'
+      dired-dwim-target t                    ;; Prefers dired in another window
+      help-window-select t                   ;; Auto selects pop up windows.
+      read-process-output-max (* 1024 1024)) ;; Increase read size for data chunks.
+
+;; Buffer-local defaults
+(setq-default indent-tabs-mode nil           ;; Tab inserts spaces instead of tabs
+              tab-width 4                    ;; Tab spacing defined to 4 spaces
+              fill-column 80)                ;; Autowrap functions to column 80
 
 (put 'downcase-region 'disabled nil) ;; Eliminates irritating warning message
 (put 'upcase-region 'disabled nil)   ;; Eliminates irritating warning message
@@ -330,7 +331,24 @@ over custom backends."
   (org-capture-bookmark nil)
   (org-log-done 'time)
   :config
-  (setq org-agenda-files (list local-notes-file)))
+  (setq org-agenda-files (list local-notes-file))
+  (setq org-capture-templates
+        '(("f" "Fleeting note" item
+           (file+headline org-default-notes-file "Notes")
+           "- %?")
+          ("p" "Permanent note" plain
+           (file denote-last-path)
+           #'denote-org-capture
+           :no-save t
+           :immediate-finish nil
+           :kill-buffer t
+           :jump-to-captured t)
+          ("t" "New task" entry
+           (file+headline org-default-notes-file "Tasks")
+           "* TODO %i%?")
+          ("a" "Appointment" entry
+           (file+headline org-default-notes-file "Appointments")
+           "* %i%?"))))
 
 ;; TODO Translate original calendar settings from original custom.el.
 (setq calendar-week-start-day 1)
@@ -367,24 +385,7 @@ over custom backends."
   (setq denote-excluded-directories-regexp nil)
   (setq denote-excluded-keywords-regexp nil)
   (setq denote-date-prompt-use-org-read-date t)
-  (setq denote-backlinks-show-context t)
-  (setq org-capture-templates
-        '(("f" "Fleeting note" item
-           (file+headline org-default-notes-file "Notes")
-           "- %?")
-          ("p" "Permanent note" plain
-           (file denote-last-path)
-           #'denote-org-capture
-           :no-save t
-           :immediate-finish nil
-           :kill-buffer t
-           :jump-to-captured t)
-          ("t" "New task" entry
-           (file+headline org-default-notes-file "Tasks")
-           "* TODO %i%?")
-          ("a" "Appointment" entry
-           (file+headline org-default-notes-file "Appointments")
-           "* %i%?"))))
+  (setq denote-backlinks-show-context t))
 
 ;; -----------------------------------------------------------------------------
 ;; Completion Packages
@@ -861,10 +862,10 @@ over custom backends."
              elisp-refs-symbol))
 
 ;; Provides a number of language snippet templates
-(add-to-list 'load-path (expand-file-name "yasnippet-snippets" user-site-lisp-dir))
 (add-to-list 'load-path (expand-file-name "yasnippet" user-site-lisp-dir))
-(require 'yasnippet-snippets)
+(add-to-list 'load-path (expand-file-name "yasnippet-snippets" user-site-lisp-dir))
 (require 'yasnippet)
+(require 'yasnippet-snippets)
 (yas-global-mode 1)
 (global-set-key (kbd "C-<tab>") 'yas-expand)
 
