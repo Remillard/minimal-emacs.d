@@ -873,6 +873,106 @@ over custom backends."
 (yas-global-mode 1)
 (global-set-key (kbd "C-<tab>") 'yas-expand)
 
+;; Treesitter Programming Language Grammars -- In Windows, these are best
+;; downloaded as precompiled libraries and this function
+;; my-treesit-update-grammars function will grab the latest binaries and put
+;; into var/tree-sitter/. For macOS and Linux, the grammars are built from
+;; scratch.
+(defun my-treesit-update-grammars ()
+  "Download and install the latest Windows tree-sitter grammar DLLs.
+Queries GitHub for the latest emacs-tree-sitter/tree-sitter-langs release,
+downloads the Windows tar.gz to `temporary-file-directory', extracts via
+tar.exe (built-in on Windows 10+), renames each DLL by adding the 'lib'
+prefix required by Emacs built-in treesit, copies to var/tree-sitter/,
+then cleans up.  Emacs will block during the download (~14 MB)."
+  (interactive)
+  (unless (eq system-type 'windows-nt)
+    (user-error "Windows only — use treesit-install-language-grammar on macOS/Linux"))
+  (require 'url)
+  (let* ((api-url  "https://api.github.com/repos/emacs-tree-sitter/tree-sitter-langs/releases/latest")
+         (dest-dir (expand-file-name "var/tree-sitter/" user-emacs-orig-dir))
+         (temp-tgz (expand-file-name "ts-grammars-windows.tar.gz" temporary-file-directory))
+         (temp-dir (expand-file-name "ts-grammars-extract" temporary-file-directory)))
+
+    ;; Step 1: fetch release metadata
+    (message "my-treesit-update-grammars: querying GitHub API...")
+    (let* ((buf   (url-retrieve-synchronously api-url t nil 15))
+           (json  (with-current-buffer buf
+                    (goto-char url-http-end-of-headers)
+                    (json-parse-buffer :object-type 'alist :array-type 'list)))
+           (_     (kill-buffer buf))
+           (tag   (cdr (assq 'tag_name json)))
+           (asset (seq-find (lambda (a)
+                              (string-match-p "tree-sitter-grammars-windows"
+                                              (cdr (assq 'name a))))
+                            (cdr (assq 'assets json))))
+           (url   (cdr (assq 'browser_download_url asset))))
+      (unless url
+        (error "Cannot find Windows grammar archive in release %s" tag))
+
+      ;; Step 2: download
+      (message "my-treesit-update-grammars: downloading release %s (~14 MB)..." tag)
+      (url-copy-file url temp-tgz t)
+
+      ;; Step 3: extract (tar.exe is built-in on Windows 10+)
+      (when (file-directory-p temp-dir)
+        (delete-directory temp-dir t))
+      (make-directory temp-dir t)
+      (message "my-treesit-update-grammars: extracting...")
+      (unless (zerop (call-process "tar" nil nil nil
+                                   "-xzf" (expand-file-name temp-tgz)
+                                   "-C"   (expand-file-name temp-dir)))
+        (delete-file temp-tgz)
+        (error "tar extraction failed; is tar.exe on PATH?"))
+
+      ;; Step 4: copy with canonical rename to libtree-sitter-LANG.dll
+      ;; Source files are named LANG.dll (bare language name).
+      ;; Built-in treesit requires: libtree-sitter-LANG.dll.
+      ;; Normalize defensively: strip any existing tree-sitter- or
+      ;; libtree-sitter- prefix so the result is always correct.
+      (unless (file-directory-p dest-dir)
+        (make-directory dest-dir t))
+      (let ((count 0))
+        (dolist (file (directory-files-recursively temp-dir "\\.dll\\'"))
+          (let* ((base      (file-name-nondirectory file))
+                 (stem      (file-name-sans-extension base))
+                 (lang      (cond
+                             ((string-prefix-p "libtree-sitter-" stem)
+                              (substring stem (length "libtree-sitter-")))
+                             ((string-prefix-p "tree-sitter-" stem)
+                              (substring stem (length "tree-sitter-")))
+                             (t stem)))
+                 (dest-base (format "libtree-sitter-%s.dll" lang))
+                 (dest      (expand-file-name dest-base dest-dir)))
+            (copy-file file dest t)
+            (cl-incf count)))
+
+        ;; Step 5: cleanup
+        (delete-file temp-tgz)
+        (delete-directory temp-dir t)
+        (message "my-treesit-update-grammars: installed %d DLLs from release %s → %s"
+                 count tag dest-dir)))))
+
+;; Populate treesit-language-source-alist for M-x treesit-install-language-grammar.
+;; Primarily useful on macOS/Linux; Windows uses my-treesit-update-grammars instead.
+(when local-treesit-language-source-alist
+  (setq treesit-language-source-alist local-treesit-language-source-alist))
+
+;; Remap classic major modes to their tree-sitter variants where Emacs provides
+;; a built-in ts-mode.  VHDL and Verilog/SV are intentionally excluded.
+(setq major-mode-remap-alist
+      '((python-mode     . python-ts-mode)
+        (c-mode          . c-ts-mode)
+        (c++-mode        . c++-ts-mode)
+        (sh-mode         . bash-ts-mode)
+        (json-mode       . json-ts-mode)
+        (yaml-mode       . yaml-ts-mode)
+        (cmake-mode      . cmake-ts-mode)
+        (dockerfile-mode . dockerfile-ts-mode)
+        (toml-mode       . toml-ts-mode)))
+
+(setq treesit-font-lock-level 4)
+
 ;;
 ;; VHDL
 ;;

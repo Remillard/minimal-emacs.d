@@ -55,7 +55,7 @@ in `init.el'.  Several frequent variations I like:
   (pcase sysinfo-os-family
     ('Windows "Symbols Nerd Font Mono")
     ('macOS   "Symbols Nerd Font Mono")
-    (_        "Symobls Nerd Font Mono"))
+    (_        "Symbols Nerd Font Mono"))
   "Nerd icons font family. Adjust if the font installs under a different name.")
 
 (defvar local-starting-frame-max t
@@ -87,5 +87,19 @@ variations:
     ('macOS   "/bin/zsh")
     (_        "/bin/bash"))
   "Shell binary for `explicit-shell-file-name'.")
+
+;; On macOS and Linux, treesit-install-language-grammar compiles grammars from
+;; source.  Set entries for each language you want available.  Leave nil on
+;; Windows — use M-x my-treesit-update-grammars there instead.
+;; Format: (LANGUAGE . ("GIT-URL" [REVISION SOURCEDIR CC CFLAGS]))
+(defvar local-treesit-language-source-alist nil
+  "Source alist for `treesit-install-language-grammar' (macOS/Linux).
+On Windows, use `my-treesit-update-grammars' instead.  Example entries:
+  (python  . (\"https://github.com/tree-sitter/tree-sitter-python\"))
+  (c       . (\"https://github.com/tree-sitter/tree-sitter-c\"))
+  (cpp     . (\"https://github.com/tree-sitter/tree-sitter-cpp\"))
+  (elisp   . (\"https://github.com/Wilfred/tree-sitter-elisp\"))
+  (vhdl    . (\"https://github.com/alemuller/tree-sitter-vhdl\"))
+  (verilog . (\"https://github.com/tree-sitter/tree-sitter-verilog\")))")
 
 (provide 'local-settings)

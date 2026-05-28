@@ -41,8 +41,9 @@ The hook that wires this together is `minimal-emacs-load-user-init` defined in `
 - `site-lisp/` — Manually managed packages and local config (on `load-path` as `user-site-lisp-dir`)
   - `vhdl-mode-3.39.3/` — Standalone VHDL mode (loaded directly, not via Elpaca)
   - `vhdl-mode-config.el` — All VHDL mode settings, models, and project config
-  - `local-settings.el` — **Not committed.** Machine-local vars (name, email, font, theme, temp dir). Copy from `local-settings.el.template`.
+  - `local-settings.el` — **Not committed.** Machine-local vars: name, email, VHDL company, font, nerd-icons font family, theme, temp dir, notes dir/file, shell binary. Uses `sysinfo-os-family` with `pcase` for cross-platform defaults. Copy from `local-settings.el.template`.
   - `local-vhdl-proj.el` — **Not committed.** Machine-local VHDL project definitions. Copy from `local-vhdl-proj.el.template`.
+  - `sysinfo/` — OS detection library providing `sysinfo-os-family` (`Windows`, `macOS`, `Linux`, etc.) and `sysinfo-os-type` (e.g., `WSL`). Loaded in `post-init.el` before `local-settings.el` so that `pcase sysinfo-os-family` expressions in `local-settings.el` evaluate correctly.
   - `Emacs-MATLAB-Mode/`, `yasnippet/`, `yasnippet-snippets/`, `vscode-cp-proxy/` — Git submodules
 - `var/` — Runtime data directory (`user-emacs-directory` is redirected here to keep the repo root clean). Contains `elpa/`, `elpaca/`, `recentf`, `savehist`, etc.
   - `var/snippets/` — **Tracked in git.** Custom YASnippet snippets.
@@ -67,7 +68,7 @@ Packages not managed by Elpaca (loaded via `require` directly from `site-lisp/`)
 ### Local Settings Pattern
 
 Any machine-specific value (paths, names, font, theme) is declared as a `defvar` in `site-lisp/local-settings.el` and referenced by name in `post-init.el`. When adding new machine-local configuration:
-1. Add a `defvar` to `site-lisp/local-settings.el.template` with a safe default.
+1. Add a `defvar` to `site-lisp/local-settings.el.template` with a safe default. For values that differ by OS (fonts, shell path, etc.), use `(pcase sysinfo-os-family ('Windows ...) ('macOS ...) (_ ...))` as the default expression — `sysinfo` is guaranteed loaded before `local-settings.el`.
 2. Reference the variable name in `post-init.el` or wherever needed.
 3. Never hardcode machine-specific paths in committed files.
 

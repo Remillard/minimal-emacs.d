@@ -30,10 +30,9 @@ saveplace
 srecode-map.el
 site-lisp/local-settings.el
 site-lisp/local-vhdl-proj.el
-# Generally want to ignore all of var, but custom snippets
-# end up here.
+# Generally want to ignore all of var, but custom snippets and
+# tree-sitter grammars are regenerated via my-treesit-update-grammars.
 var/*
 !var/snippets/
-!var/tree-sitter/
 
 
