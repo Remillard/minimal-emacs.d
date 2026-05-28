@@ -69,7 +69,7 @@
                                  (recentf-mode 1))))
 (add-hook 'kill-emacs-hook #'recentf-cleanup)
 (setq recentf-max-menu-items 25)
-(setq recentf-max-saved-items 25)
+(setq recentf-max-saved-items 300)
 (add-hook 'after-init-hook #'(lambda()
                                (run-at-time nil (* 5 60) 'recentf-save-list)))
 
@@ -92,15 +92,15 @@
 (setq auto-save-timeout 30)    ;; seconds of idle before auto-save
 
 ;; Miscellaneous Settings (global variables)
-(setq inhibit-startup-screen t               ;; Just go directly to initial buffer
-      column-number-mode t                   ;; Shows row and column on the modeline
-      delete-by-moving-to-trash t            ;; Deletes files to OS trash
-      display-time-day-and-date t            ;; For display-time-mode, also show the day.
-      ring-bell-function 'ignore             ;; No bell
-      use-short-answers t                    ;; Permit 'y' or 'n' instead of 'yes' or 'no'
-      dired-dwim-target t                    ;; Prefers dired in another window
-      help-window-select t                   ;; Auto selects pop up windows.
-      read-process-output-max (* 1024 1024)) ;; Increase read size for data chunks.
+(setq inhibit-startup-screen t                 ;; Just go directly to initial buffer
+      column-number-mode t                     ;; Shows row and column on the modeline
+      delete-by-moving-to-trash t              ;; Deletes files to OS trash
+      display-time-day-and-date t              ;; For display-time-mode, also show the day.
+      ring-bell-function 'ignore               ;; No bell
+      use-short-answers t                      ;; Permit 'y' or 'n' instead of 'yes' or 'no'
+      dired-dwim-target t                      ;; Prefers dired in another window
+      help-window-select t                     ;; Auto selects pop up windows.
+      read-process-output-max (* 2 1024 1024)) ;; Increase read size for data chunks.
 
 ;; Buffer-local defaults
 (setq-default indent-tabs-mode nil           ;; Tab inserts spaces instead of tabs
@@ -167,8 +167,8 @@
 
 ;; Hooks the load until the entire Elpaca queue is
 ;; cleared.
-(add-hook 'elpaca--post-queues-hook #'(lambda()
-                                        (load-theme local-preferred-theme :noconfirm)))
+(add-hook 'elpaca-after-init-hook #'(lambda()
+                                      (load-theme local-preferred-theme :noconfirm)))
 
 ;; Doom Modeline
 (use-package doom-modeline
@@ -239,8 +239,8 @@
   ;; initial-buffer-choice references dashboard-buffer-name so stays in :config
   (setq initial-buffer-choice (lambda () (get-buffer-create dashboard-buffer-name))))
 
-(add-hook 'elpaca--post-queues-hook #'(lambda()
-                                        (dashboard-open)))
+(add-hook 'elpaca-after-init-hook #'(lambda()
+                                      (dashboard-open)))
 ;; Redefining the action taken when a project is selected in dashboard.
 ;; Previously it would do a find file in the project.  However this
 ;; will simply open dired at the base directory which is a lot more
@@ -292,6 +292,10 @@ over custom backends."
   (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
   (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
   (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil '(center repeated)))
+
+(use-package git-modes
+  :ensure t
+  :defer t)
 
 ;; -----------------------------------------------------------------------------
 ;; Org Mode
@@ -401,24 +405,13 @@ over custom backends."
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-separator ?\s)          ;; Orderless field separator
   (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  (corfu-quit-no-match t)        ;; Never quit, even if there is no match
+  (corfu-quit-no-match t)        ;; Quit when there is no match
   (corfu-preview-current nil)    ;; Disable current candidate preview
   (corfu-preselect 'prompt)      ;; Preselect the prompt
   (corfu-on-exact-match nil)     ;; Configure handling of exact matches
   (corfu-scroll-margin 5)        ;; Use scroll margin
   :config
   (global-corfu-mode))
-
-;; Emacs built-in settings that complement corfu and vertico
-(use-package emacs
-  :ensure nil
-  :custom
-  ;; Enable indentation+completion using the TAB key.
-  (tab-always-indent 'complete)
-  ;; Emacs 30 and newer: Disable Ispell completion function.
-  (text-mode-ispell-word-completion nil)
-  ;; Hide commands in M-x which do not apply to the current mode.
-  (read-extended-command-predicate #'command-completion-default-include-p))
 
 (use-package cape
   :ensure t
@@ -444,9 +437,16 @@ over custom backends."
   (vertico-sort-function 'vertico-sort-history-alpha))
 
 ;; A few more useful configurations for Vertico
+;; Emacs built-in settings that complement corfu and vertico
 (use-package emacs
-  :ensure nil ;; built-in (naturally)
+  :ensure nil
   :custom
+  ;; Enable indentation+completion using the TAB key.
+  (tab-always-indent 'complete)
+  ;; Emacs 30 and newer: Disable Ispell completion function.
+  (text-mode-ispell-word-completion nil)
+  ;; Hide commands in M-x which do not apply to the current mode.
+  (read-extended-command-predicate #'command-completion-default-include-p)
   ;; Support opening new minibuffers from inside existing minibuffers.
   (enable-recursive-minibuffers t)
   :init
@@ -460,7 +460,6 @@ over custom backends."
                   (car args))
           (cdr args)))
   (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
-
   ;; Do not allow the cursor in the minibuffer prompt
   (setq minibuffer-prompt-properties
         '(read-only t cursor-intangible t face minibuffer-prompt))

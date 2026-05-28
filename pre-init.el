@@ -3,11 +3,6 @@
 ;; -----------------------------------------------------------------------------
 ;; Elpaca
 ;; -----------------------------------------------------------------------------
-;; By default, minimal-emacs-package-initialize-and-refresh is set to t, which
-;; makes minimal-emacs.d call the built-in package manager. Since Elpaca will
-;; replace the package manager, there is no need to call it.
-(setq minimal-emacs-package-initialize-and-refresh nil)
-
 (defvar elpaca-installer-version 0.10)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
@@ -53,6 +48,7 @@
 ;; Optional: Install use-package support
 (elpaca elpaca-use-package
   (elpaca-use-package-mode))
+(elpaca-wait)
 
 ;; Disable package.el since we're using Elpaca
 (setq package-enable-at-startup nil)
