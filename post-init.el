@@ -6,6 +6,8 @@
 ;; External file for local settings
 (message "---- Localization Variables ----")
 (add-to-list 'load-path user-site-lisp-dir)
+(add-to-list 'load-path (expand-file-name "sysinfo" user-site-lisp-dir))
+(require 'sysinfo)
 (require 'local-settings)
 (setq user-full-name local-full-name)
 (setq user-mail-address local-user-mail-address)
@@ -203,6 +205,9 @@
                '("vhdl" nerd-icons-octicon "nf-oct-cpu" :face nerd-icons-blue))
   (add-to-list 'nerd-icons-mode-icon-alist
                '(matlab-mode nerd-icons-mdicon "nf-md-alpha_m" :face nerd-icons-red)))
+
+;; Picking up the font defined from local-settings.
+(setopt nerd-icons-font-family local-nerd-icons-font-family)
 
 ;; (use-package nerd-icons-dired
 ;;   :ensure t
@@ -776,8 +781,8 @@ over custom backends."
 (message "---- Programming ----")
 ;;
 ;; General
-;;
-;;(setopt explicit-shell-file-name "c:/Program Files/PowerShell/7/pwsh.exe")
+;; This is set in the local settings file.
+(setq explicit-shell-file-name local-shell-file-name)
 
 ;; Colorizes matching pairs of delimeters
 (use-package rainbow-delimiters

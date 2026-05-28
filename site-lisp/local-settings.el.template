@@ -34,17 +34,29 @@ the ORG-DEFAULT-NOTES-FILE value.")
   "The LOCAL-NOTES-FILE variable will be assigned to the `org-mode variable
 ORG-DEFAULT-NOTES-FILE in `init.el'")
 
-(defvar local-preferred-font-name "Cascadia Code Light 11"
+(defvar local-preferred-font-name
+  (pcase sysinfo-os-family
+    ('Windows "Consolas 11")
+    ('macOS   "SF Mono 13")
+    (_        "DejaVu Sans Mono 11"))
   "The LOCAL-PREFERRED-FONT-NAME variable will be assigned to the frame font
-in `init.el'.  Several frequent variations:
+in `init.el'.  Several frequent variations I like:
   - Inconsolata 14
   - Roboto Mono 12
   - Consolas 12
   - Cascadia Code Light 11
   - Fira Code 11")
-;; Sometimes necessary based on local font settings.  Some examples
-;;(setq nerd-icons-font-family "Symbols Nerd Font Mono")
-;;(setq nerd-icons-font-family "FiraCode Nerd Font Mono")
+
+;; Sometimes necessary based on local font settings.
+;; Some examples I've used:
+;; - Symbols Nerd Font Mono
+;; - FiraCode Nerd Font Mono
+(defvar local-nerd-icons-font-family
+  (pcase sysinfo-os-family
+    ('Windows "Symbols Nerd Font Mono")
+    ('macOS   "Symbols Nerd Font Mono")
+    (_        "Symobls Nerd Font Mono"))
+  "Nerd icons font family. Adjust if the font installs under a different name.")
 
 (defvar local-starting-frame-max t
   "the LOCAL-STARTING-FRAME-MAX boolean variable is used to pick between a
@@ -67,5 +79,13 @@ variations:
   - doom-material
   - doom-monokai-pro
   - doom-one")
+
+;; Local shell call
+(defvar local-shell-file-name
+  (pcase sysinfo-os-family
+    ('Windows "c:/Program Files/PowerShell/7/pwsh.exe")
+    ('macOS   "/bin/zsh")
+    (_        "/bin/bash"))
+  "Shell binary for `explicit-shell-file-name'.")
 
 (provide 'local-settings)

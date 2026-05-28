@@ -9,7 +9,7 @@
 ;; the `post-init.el' file a bit, as it's already rather large with the
 ;; package selection and configurations.
 
-(add-to-list 'load-path "~/.emacs.d/site-lisp/vhdl-mode-3.39.3/")
+(add-to-list 'load-path (expand-file-name "site-lisp/vhdl-mode-3.39.3/" user-emacs-orig-dir))
 (autoload 'vhdl-mode "vhdl-mode" "VHDL Mode" t)
 (setq auto-mode-alist (cons '("\\.vhdl?\\'" . vhdl-mode) auto-mode-alist))
 (require 'vhdl-mode)

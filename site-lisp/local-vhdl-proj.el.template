@@ -8,6 +8,72 @@
 ;; This file is intended to not be committed to the repository and simply
 ;; be used by vhdl-mode-config.el to load localized project settings.
 
+;; -----------------------------------------------------------------------------
+;; vhdl-project-alist field reference
+;; -----------------------------------------------------------------------------
+;; Each project entry is a list of exactly 11 fields in this order:
+;;
+;; (  "Name"                ; [1]  Project name: used to select active project
+;;                          ;      via `vhdl-project' or M-x vhdl-set-project.
+;;
+;;    "Title"               ; [2]  Single-line title: inserted into file headers
+;;                          ;      via `vhdl-file-header'.
+;;
+;;    "default-dir/"        ; [3]  Default/root directory: ABSOLUTE path, must
+;;                          ;      end with /.  All relative paths below are
+;;                          ;      relative to this directory.
+;;
+;;    ("src/" "src2/")      ; [4]  Sources list (each entry must end with /):
+;;                          ;       "path/"      - single directory
+;;                          ;       "-r path/"   - recursive directory tree
+;;                          ;       "path/f.vhd" - explicit file
+;;                          ;      Wildcards * and ? are supported.
+;;                          ;      Environment variables (e.g. $PROJ) are
+;;                          ;      expanded.  Empty list = use default-dir.
+;;
+;;    "exclude-regexp"      ; [5]  Regexp matched against file/directory names
+;;                          ;      to exclude from sources.  Use "" for none.
+;;                          ;      Example: "/CVS/" excludes CVS directories.
+;;
+;;    (("ModelSim"          ; [6]  Compile options: list of per-compiler entries.
+;;      "compile-opts"      ;      compile-opts: overrides compiler defaults.
+;;                          ;        \\1 = library name
+;;                          ;        \\2 = default compiler options
+;;                          ;      Example: "-2008 -work \\1"
+;;      "make-opts"         ;      make-opts: overrides make defaults.
+;;                          ;        \\1 = Makefile name
+;;                          ;        \\2 = default make options
+;;                          ;      Example: "-f \\1 top_level"
+;;      nil))               ;      exceptions: nil, or list of per-file overrides:
+;;                          ;        (("file-regexp" . "opts") ...)
+;;                          ;          \\1 = library, \\2 = defaults, \\3 = proj-opts
+;;                          ;        (("file-regexp" . nil)) = do not compile file
+;;                          ;      Use nil for no exceptions.
+;;
+;;    "compile-dir/"        ; [7]  Compile directory: where vcom is run and the
+;;                          ;      Makefile is placed.  Must end with /.
+;;                          ;        \\1 = compiler ID string (e.g. "modelsim")
+;;
+;;    "work"                ; [8]  Library name: logical VHDL library to compile
+;;                          ;      into.  Default is "work".
+;;
+;;    "lib-dir/"            ; [9]  Library directory: physical path the compiler
+;;                          ;      maps the library to.  Must end with /.
+;;                          ;        \\1 = compiler ID string
+;;
+;;    "Makefile_\\2"        ; [10] Makefile name:
+;;                          ;        \\1 = compiler ID string
+;;                          ;        \\2 = library name
+;;                          ;      Example: "Makefile_\\2" -> "Makefile_work"
+;;
+;;    "")                   ; [11] Description: multi-line string inserted into
+;;                          ;      file headers.  Use "" if not needed.
+;;                          ;      Newlines: use \n or C-j when entering.
+;;
+;; Compiler names must exactly match a key in `vhdl-compiler-alist'.
+;; Currently defined compilers include: "ModelSim", "Aldec", "GHDL",
+;; "Synopsys", "Cadence Leapfrog", "Cadence NC", "Ikos", "Mentor", etc.
+;; -----------------------------------------------------------------------------
 
 (setopt vhdl-project-alist
         '(("TMP126 Model" "TMP126 HDL Verification Model" "d:/projects/tmp126_hdl_model/"
