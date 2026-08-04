@@ -2,10 +2,10 @@
 # name: Sync Process w/ Sync Reset
 # key: spsr
 # --
-${1:LABEL} : process (${2:clk}, ${3:reset})
+${1:LABEL} : process (${2:clk})
 begin
     if rising_edge(${2}) then
-        if (${3} = '${4:1}') then
+        if (${3:reset} = '${4:1}') then
             -- do reset things
             $0
         else

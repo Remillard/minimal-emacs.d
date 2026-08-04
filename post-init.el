@@ -1133,6 +1133,7 @@ then cleans up.  Emacs will block during the download (~14 MB)."
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
 (global-set-key (kbd "C-r") 'isearch-backward-regexp)
 (global-set-key (kbd "C-M-s") 'isearch-forward-symbol-at-point)
+(global-set-key (kbd "<f5>") 'revert-buffer-quick)
 
 ;; Unbinding the mouse scroll wheel text adjust.
 ;; Remember C-x C-M-0 for global text scale adjust!!!
