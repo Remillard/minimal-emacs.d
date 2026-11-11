@@ -7,9 +7,12 @@
 [submodule "site-lisp/yasnippet-snippets"]
 	path = site-lisp/yasnippet-snippets
 	url = https://github.com/AndreaCrotti/yasnippet-snippets.git
+	ignore = dirty
 [submodule "vscode-cp-proxy"]
 	path = site-lisp/vscode-cp-proxy
 	url = https://github.com/utsahi/vscode-cp-proxy.git
+	ignore = dirty
 [submodule "site-lisp/sysinfo"]
 	path = site-lisp/sysinfo
 	url = git@my.github.com:p-kolacz/sysinfo.git
+	ignore = dirty
