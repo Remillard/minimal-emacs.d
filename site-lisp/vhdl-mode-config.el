@@ -21,8 +21,8 @@
           ("Combinatorial Process" "<label> : process (all)\12begin  -- process <label>\12    <cursor>\12end process <label>;" "c" "cp")
           ("Testbench Process (no sensitivity list)" "<label> : process\12begin  -- process <label>\12    <cursor>\12end process <label>;" "t" "tp")
           ("Shorthand std_logic_vector" "std_logic_vector(<cursor>)" "" "slv")
-          ("Basic IEEE Libraries" "library ieee;\12use ieee.std_logic_1164.all\12use ieee.numeric_std.all;\12<cursor>" "" "ieee")
-          ("TextIO Libraries" "use std.textio.all\12use ieee.std_logic_textio.all;\12<cursor>" "" "textio")))
+          ("Basic IEEE Libraries" "library ieee;\12use ieee.std_logic_1164.all;\12use ieee.numeric_std.all;\12<cursor>" "" "ieee")
+          ("TextIO Libraries" "use std.textio.all;\12use ieee.std_logic_textio.all;\12<cursor>" "" "textio")))
 
 ;; Projects
 (require 'local-vhdl-proj)

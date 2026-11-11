@@ -983,16 +983,16 @@ then cleans up.  Emacs will block during the download (~14 MB)."
 
 ;; Remap classic major modes to their tree-sitter variants where Emacs provides
 ;; a built-in ts-mode.  VHDL and Verilog/SV are intentionally excluded.
-(setq major-mode-remap-alist
-      '((python-mode     . python-ts-mode)
-        (c-mode          . c-ts-mode)
-        (c++-mode        . c++-ts-mode)
-        (sh-mode         . bash-ts-mode)
-        (json-mode       . json-ts-mode)
-        (yaml-mode       . yaml-ts-mode)
-        (cmake-mode      . cmake-ts-mode)
-        (dockerfile-mode . dockerfile-ts-mode)
-        (toml-mode       . toml-ts-mode)))
+(dolist (remap '((python-mode     . python-ts-mode)
+                 (c-mode          . c-ts-mode)
+                 (c++-mode        . c++-ts-mode)
+                 (sh-mode         . bash-ts-mode)
+                 (json-mode       . json-ts-mode)
+                 (yaml-mode       . yaml-ts-mode)
+                 (cmake-mode      . cmake-ts-mode)
+                 (dockerfile-mode . dockerfile-ts-mode)
+                 (toml-mode       . toml-ts-mode)))
+  (setf (alist-get (car remap) major-mode-remap-alist) (cdr remap)))
 
 (setq treesit-font-lock-level 4)
 
@@ -1007,7 +1007,7 @@ then cleans up.  Emacs will block during the download (~14 MB)."
 ;;
 (use-package verilog-mode
   :ensure nil
-  :defer nil
+  :defer t
   :custom
   (verilog-indent-level 4)
   (verilog-indent-level-module 4)
@@ -1211,7 +1211,7 @@ environment before the server connects; with no .venv it stays global."
 ;; Bufler replacement for buffer management
 (use-package bufler
  :ensure t
- :defer nil
+ :defer t
  :hook (bufler-list-mode . (lambda () (setq-local font-lock-unfontify-region-function #'ignore)))
  :bind (("C-x C-b" . bufler-list)
         :map bufler-list-mode-map
