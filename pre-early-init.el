@@ -39,3 +39,10 @@
            (time-to-seconds (time-since before-init-time))
            gcs-done))
 (add-hook 'emacs-startup-hook #'display-startup-time 100)
+
+;; -----------------------------------------------------------------------------
+;; Speed up Windows File IO
+;; -----------------------------------------------------------------------------
+(when (eq system-type 'windows-nt)
+  (setq w32-get-true-file-attributes nil      ; Decrease file IO workload
+        w32-pipe-buffer-size (* 128 1024)))   ; Read more at a time

@@ -281,7 +281,12 @@ over custom backends."
   :ensure t
   :after transient
   :bind
-  ("C-x g" . magit-status))
+  ("C-x g" . magit-status)
+  :config
+  ;; Show absolute commit dates in the log margin instead of relative "age".
+  ;; Value is (INIT STYLE WIDTH AUTHOR AUTHOR-WIDTH); STYLE as a string is
+  ;; passed to `format-time-string'. WIDTH must stay `magit-log-margin-width'.
+  (setq magit-log-margin '(t "%Y-%m-%d " magit-log-margin-width t 18)))
 
 (use-package git-gutter
   :ensure t
@@ -878,18 +883,36 @@ over custom backends."
 ;; my-treesit-update-grammars function will grab the latest binaries and put
 ;; into var/tree-sitter/. For macOS and Linux, the grammars are built from
 ;; scratch.
+;;
+;; Emacs links a tree-sitter runtime with a fixed maximum grammar ABI version
+;; (check via (treesit-library-abi-version); Emacs 30.1 => 14).  Swapping the
+;; runtime DLL does NOT raise this -- the ceiling is compiled into Emacs.
+;; tree-sitter-langs 0.13.x ships ABI-15 grammars, which fail to load on such
+;; Emacsen with "version-mismatch 15".  Pin to the last ABI<=14 release
+;; (0.12.329, confirmed by reading the compiled grammar's ABI field) until
+;; Emacs itself is built against a newer tree-sitter.  Set to nil to always
+;; fetch the latest release (appropriate once on a newer Emacs).
+(defvar my-treesit-langs-release "0.12.329"
+  "tree-sitter-langs release tag to install, or nil for the latest.
+Pinned because Emacs 30.1 supports grammar ABI <= 14, while
+tree-sitter-langs 0.13.x ships ABI-15 grammars that will not load.")
+
 (defun my-treesit-update-grammars ()
-  "Download and install the latest Windows tree-sitter grammar DLLs.
-Queries GitHub for the latest emacs-tree-sitter/tree-sitter-langs release,
-downloads the Windows tar.gz to `temporary-file-directory', extracts via
-tar.exe (built-in on Windows 10+), renames each DLL by adding the 'lib'
+  "Download and install Windows tree-sitter grammar DLLs.
+Fetches the `my-treesit-langs-release' release of
+emacs-tree-sitter/tree-sitter-langs (or the latest when that variable is
+nil), downloads the Windows tar.gz to `temporary-file-directory', extracts
+via tar.exe (built-in on Windows 10+), renames each DLL by adding the 'lib'
 prefix required by Emacs built-in treesit, copies to var/tree-sitter/,
 then cleans up.  Emacs will block during the download (~14 MB)."
   (interactive)
   (unless (eq system-type 'windows-nt)
     (user-error "Windows only — use treesit-install-language-grammar on macOS/Linux"))
   (require 'url)
-  (let* ((api-url  "https://api.github.com/repos/emacs-tree-sitter/tree-sitter-langs/releases/latest")
+  (let* ((api-url  (if my-treesit-langs-release
+                       (format "https://api.github.com/repos/emacs-tree-sitter/tree-sitter-langs/releases/tags/%s"
+                               my-treesit-langs-release)
+                     "https://api.github.com/repos/emacs-tree-sitter/tree-sitter-langs/releases/latest"))
          (dest-dir (expand-file-name "var/tree-sitter/" user-emacs-orig-dir))
          (temp-tgz (expand-file-name "ts-grammars-windows.tar.gz" temporary-file-directory))
          (temp-dir (expand-file-name "ts-grammars-extract" temporary-file-directory)))
@@ -1051,6 +1074,38 @@ then cleans up.  Emacs will block during the download (~14 MB)."
   :ensure t
   :defer t)
 
+;; Helpers for pointing a single global pylsp at a per-project .venv.
+;; Defined at top level (not inside eglot's :config) so the mode hooks below
+;; are registered even though eglot itself is deferred.
+(defun my/python-venv-python ()
+  "Return the python executable of a .venv found upward, or nil."
+  (when-let* ((root (locate-dominating-file
+                     (or buffer-file-name default-directory) ".venv"))
+              (py (expand-file-name
+                   (if (eq system-type 'windows-nt)
+                       ".venv/Scripts/python.exe"
+                     ".venv/bin/python")
+                   root)))
+    (and (file-exists-p py) py)))
+
+(defun my/python-eglot-setup ()
+  "Configure pylsp for the project venv (if present) and ensure Eglot.
+Setting the workspace configuration here guarantees jedi gets the right
+environment before the server connects; with no .venv it stays global."
+  (let ((py (my/python-venv-python)))
+    (setq-local eglot-workspace-configuration
+                `((:pylsp
+                   . (:plugins
+                      (,@(when py (list :jedi `(:environment ,py)))
+                       :isort       (:enabled t)
+                       :autopep8    (:enabled nil)
+                       :yapf        (:enabled :json-false)
+                       :pycodestyle (:enabled t)
+                       :pyflakes    (:enabled t)
+                       :pydocstyle  (:enabled t)
+                       :mccabe      (:enabled t)))))))
+  (eglot-ensure))
+
 (use-package eglot
   :ensure nil ; built-in
   :defer t
@@ -1058,17 +1113,14 @@ then cleans up.  Emacs will block during the download (~14 MB)."
              eglot-ensure
              eglot-rename
              eglot-format-buffer)
-  :hook ((python-mode . eglot-ensure))
+  ;; Hook BOTH classic and tree-sitter python modes.  Because
+  ;; major-mode-remap-alist sends python-mode -> python-ts-mode, hooking only
+  ;; python-mode would never fire; python-ts-mode must be covered too.
+  :hook ((python-mode    . my/python-eglot-setup)
+         (python-ts-mode . my/python-eglot-setup))
   :config
-  (add-to-list 'eglot-server-programs '(python-mode . ("pylsp")))
-  (setq-default eglot-workspace-configuration
-                '((:pylsp . (:plugins (:isort (:enabled t)
-                                              :autopep8 (:enabled nil)
-                                              :yapf (:enabled :json-false)
-                                              :pycodestyle (:enabled t)
-                                              :pyflakes (:enabled t)
-                                              :pydocstyle (:enabled t)
-                                              :mccabe (:enabled t)))))))
+  (add-to-list 'eglot-server-programs
+               '((python-mode python-ts-mode) . ("pylsp"))))
 
 ;;
 ;; Powershell
@@ -1207,8 +1259,63 @@ Moves back to the original window."
   (find-file (expand-file-name "post-init.el" user-emacs-orig-dir)))
 (global-set-key (kbd "C-c I") 'find-config)
 
+;; Shortcut to the PowerShell profile
+(defun find-powershell-profile ()
+  "Edit the PowerShell profile script."
+  (interactive)
+  (find-file
+   (expand-file-name "Documents/PowerShell/Microsoft.PowerShell_profile.ps1"
+                     (getenv "USERPROFILE"))))
+(global-set-key (kbd "C-c P") 'find-powershell-profile)
+
 ;; Insert a time stamp in buffers that don't support C-c . like org.
 (defun insert-time-stamp ()
   "Insert a timestamp at point, format: Weekday Mon Day YYYY HH:MM:SS."
   (interactive)
   (insert (format-time-string "%a %b %e %Y %H:%M:%S")))
+
+;; -----------------------------------------------------------------------------
+;; Interesting little function that will change the font in the current buffer
+;; using a Consult menu
+;; -----------------------------------------------------------------------------
+(defun my/consult-buffer-font (&optional buffer)
+  "Pick a font family for BUFFER (default current buffer), with live preview."
+  (interactive)
+  (let* ((buf (or buffer (current-buffer)))
+         (orig-face (buffer-local-value 'buffer-face-mode-face buf))
+         (orig-mode (buffer-local-value 'buffer-face-mode buf))
+         (selected
+          (consult--read
+           (font-family-list)
+           :prompt (format "Font for %s: " (buffer-name buf))
+           :require-match t
+           :sort t
+           :preview-key 'any
+           :default (plist-get orig-face :family)
+           :state (lambda (action cand)
+                    (when (buffer-live-p buf)
+                      (with-current-buffer buf
+                        (pcase action
+                          ('preview
+                           (if cand
+                               (progn
+                                 (setq buffer-face-mode-face (list :family cand))
+                                 (buffer-face-mode 1))
+                             (setq buffer-face-mode-face orig-face)
+                             (buffer-face-mode (if orig-mode 1 -1)))))))))))
+    (when selected
+      (with-current-buffer buf
+        (setq buffer-face-mode-face (list :family selected))
+        (buffer-face-mode 1)))))
+
+;; -----------------------------------------------------------------------------
+;; TRAMP
+;; -----------------------------------------------------------------------------
+;; Use OpenSSH so connections honor ~/.ssh/config (which sets `RequestTTY force'
+;; for gwp3, giving ssh a PTY so Duo 2FA can auto-push). The extended connection
+;; timeout accounts for slow mobile 2FA push approval.
+(message "---- TRAMP ----")
+(with-eval-after-load 'tramp
+  (setq tramp-default-method "ssh")
+  (setq tramp-connection-timeout 240))
+
