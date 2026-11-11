@@ -1,6 +1,6 @@
 [submodule "site-lisp/Emacs-MATLAB-Mode"]
 	path = site-lisp/Emacs-MATLAB-Mode
-	url = git@my.github.com:mathworks/Emacs-MATLAB-Mode.git
+	url = https://github.com/mathworks/Emacs-MATLAB-Mode.git
 [submodule "site-lisp/yasnippet"]
 	path = site-lisp/yasnippet
 	url = https://github.com/joaotavora/yasnippet.git
@@ -14,5 +14,5 @@
 	ignore = dirty
 [submodule "site-lisp/sysinfo"]
 	path = site-lisp/sysinfo
-	url = git@my.github.com:p-kolacz/sysinfo.git
+	url = https://github.com/p-kolacz/sysinfo.git
 	ignore = dirty
