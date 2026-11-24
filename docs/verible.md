@@ -27,7 +27,15 @@ On macOS/Linux, install from the release tarball or a package manager and make s
 
 ## Configuration files
 
-Copy the templates from `docs/verible/` into `~` (applies everywhere) or into a project root (overrides `~` for that tree). Both files support `#` comments.
+The files in `docs/verible/` are the single source of truth. Symlink them into a common ancestor of your sources (e.g. `C:\proj`); a real file in a project root overrides the ancestor link for that tree. Both files are found only by searching upward from the source file; there is no fallback to `~`. Both files support `#` comments.
+
+On Windows, creating symlinks requires Developer Mode (Settings > System > For developers) or an elevated shell. Do not use hard links: Emacs saves and git checkouts replace the file, which silently breaks the link.
+
+```powershell
+foreach ($n in '.rules.verible_lint', '.verible_format') {
+  New-Item -ItemType SymbolicLink -Path "C:\proj\$n" -Target "$HOME\.config\emacs\docs\verible\$n"
+}
+```
 
 | File | Purpose | How it is found |
 |---|---|---|
@@ -37,14 +45,15 @@ Copy the templates from `docs/verible/` into `~` (applies everywhere) or into a 
 
 `.verible_format` is a local convention; Verible has no standard formatter config file. Do not put `--inplace` in it: the language server rejects it and exits.
 
-The formatter file is read when the server starts. After editing it, run `M-x eglot-reconnect`.
+The formatter file is read when the server starts, and lint rules may be cached by the server. After editing either, run `M-x eglot-reconnect`.
 
 ### Lint rules template
 
 The template enforces the house naming style:
 
 - `localparam` constants: `C_` prefix, ALL_CAPS.
-- Generate block labels: ALL_CAPS (replaces Verible's `g_`/`gen_` prefix default).
+- Generate block labels: ALL_CAPS with a `_GEN` suffix (replaces Verible's `g_`/`gen_` prefix default).
+- Line length: 200 (Verible default is 100), matching `--column_limit=200` in `.verible_format` so alignment with trailing comments is preserved.
 - Ports end in `_i`, `_o`, or `_io`; active-low as `*_n_i`, `*_n_o`.
 - Types end in `_t` (enums may also use `_e`): Verible defaults, no config needed.
 
@@ -64,5 +73,5 @@ Get-ChildItem -Recurse -Include *.sv,*.svh,*.v |
 
 ```powershell
 verible-verilog-lint --rules_config_search file.sv
-verible-verilog-format --flagfile=$HOME\.verible_format --inplace file.sv
+verible-verilog-format --flagfile=$HOME\.config\emacs\docs\verible\.verible_format --inplace file.sv
 ```

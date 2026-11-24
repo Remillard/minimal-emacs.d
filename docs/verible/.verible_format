@@ -1,7 +1,8 @@
 # Verible formatter flags (one per line), passed to verible-verilog-ls as
-# --flagfile.  Copy to ~/.verible_format or a project root.  Do not add
-# --inplace: the language server rejects it.
---column_limit=98
+# --flagfile.  Found by searching upward from the source file, with no fallback
+# to ~; symlink into a common ancestor (e.g. C:\proj), see docs/verible.md.
+# Do not add --inplace: the language server rejects it.
+--column_limit=200
 --indentation_spaces=4
 --assignment_statement_alignment=align
 --case_items_alignment=align

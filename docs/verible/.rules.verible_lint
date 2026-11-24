@@ -1,8 +1,11 @@
-# Verible lint rules.  Copy to ~/.rules.verible_lint or a project root; found by
-# --rules_config_search, searching upward from the source file.
+# Verible lint rules.  Found by --rules_config_search: nearest file searching
+# upward from the source file, with no fallback to ~.  Symlink this file into a
+# common ancestor of the sources (e.g. C:\proj); see docs/verible.md.
 # Constants (localparam): C_ prefix, ALL_CAPS.
 parameter-name-style=localparam_style:;localparam_style_regex:C_[A-Z0-9_]+
-# Generate block labels: ALL_CAPS (default expects g_/gen_ prefix).
-generate-label-prefix=style_regex:[A-Z][A-Z0-9_]*
+# Generate block labels: ALL_CAPS with _GEN suffix (default expects g_/gen_ prefix).
+generate-label-prefix=style_regex:[A-Z][A-Z0-9_]*_GEN
 # Ports: _i / _o / _io direction suffix (active-low as *_n_i, *_n_o).
 +port-name-suffix
+# Line length: 200, so aligned code with trailing comments is not wrapped.
+line-length=length:200
