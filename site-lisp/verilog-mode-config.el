@@ -71,6 +71,11 @@
   (verilog-ts-indent-level 4)
   ;; imenu grouped by kind: Functions, Tasks, Always, Instances, ...
   (verilog-ts-imenu-style 'tree-group)
+  ;; begin/end/this default to font-lock-misc-punctuation-face, which most
+  ;; themes leave unstyled; reuse verilog-mode's grouping keyword face.
+  :custom-face
+  (verilog-ts-font-lock-grouping-keywords-face
+   ((t (:inherit verilog-font-lock-grouping-keywords-face))))
   :init
   (when (treesit-language-available-p 'systemverilog)
     (setf (alist-get 'verilog-mode major-mode-remap-alist) 'verilog-ts-mode))
