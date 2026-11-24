@@ -878,111 +878,18 @@ over custom backends."
 (yas-global-mode 1)
 (global-set-key (kbd "C-<tab>") 'yas-expand)
 
-;; Treesitter Programming Language Grammars -- In Windows, these are best
-;; downloaded as precompiled libraries and this function
-;; my-treesit-update-grammars function will grab the latest binaries and put
-;; into var/tree-sitter/. For macOS and Linux, the grammars are built from
-;; scratch.
-;;
-;; Emacs links a tree-sitter runtime with a fixed maximum grammar ABI version
-;; (check via (treesit-library-abi-version); Emacs 30.1 => 14).  Swapping the
-;; runtime DLL does NOT raise this -- the ceiling is compiled into Emacs.
-;; tree-sitter-langs 0.13.x ships ABI-15 grammars, which fail to load on such
-;; Emacsen with "version-mismatch 15".  Pin to the last ABI<=14 release
-;; (0.12.329, confirmed by reading the compiled grammar's ABI field) until
-;; Emacs itself is built against a newer tree-sitter.  Set to nil to always
-;; fetch the latest release (appropriate once on a newer Emacs).
-(defvar my-treesit-langs-release "0.12.329"
-  "tree-sitter-langs release tag to install, or nil for the latest.
-Pinned because Emacs 30.1 supports grammar ABI <= 14, while
-tree-sitter-langs 0.13.x ships ABI-15 grammars that will not load.")
-
-(defun my-treesit-update-grammars ()
-  "Download and install Windows tree-sitter grammar DLLs.
-Fetches the `my-treesit-langs-release' release of
-emacs-tree-sitter/tree-sitter-langs (or the latest when that variable is
-nil), downloads the Windows tar.gz to `temporary-file-directory', extracts
-via tar.exe (built-in on Windows 10+), renames each DLL by adding the 'lib'
-prefix required by Emacs built-in treesit, copies to var/tree-sitter/,
-then cleans up.  Emacs will block during the download (~14 MB)."
-  (interactive)
-  (unless (eq system-type 'windows-nt)
-    (user-error "Windows only — use treesit-install-language-grammar on macOS/Linux"))
-  (require 'url)
-  (let* ((api-url  (if my-treesit-langs-release
-                       (format "https://api.github.com/repos/emacs-tree-sitter/tree-sitter-langs/releases/tags/%s"
-                               my-treesit-langs-release)
-                     "https://api.github.com/repos/emacs-tree-sitter/tree-sitter-langs/releases/latest"))
-         (dest-dir (expand-file-name "var/tree-sitter/" user-emacs-orig-dir))
-         (temp-tgz (expand-file-name "ts-grammars-windows.tar.gz" temporary-file-directory))
-         (temp-dir (expand-file-name "ts-grammars-extract" temporary-file-directory)))
-
-    ;; Step 1: fetch release metadata
-    (message "my-treesit-update-grammars: querying GitHub API...")
-    (let* ((buf   (url-retrieve-synchronously api-url t nil 15))
-           (json  (with-current-buffer buf
-                    (goto-char url-http-end-of-headers)
-                    (json-parse-buffer :object-type 'alist :array-type 'list)))
-           (_     (kill-buffer buf))
-           (tag   (cdr (assq 'tag_name json)))
-           (asset (seq-find (lambda (a)
-                              (string-match-p "tree-sitter-grammars-windows"
-                                              (cdr (assq 'name a))))
-                            (cdr (assq 'assets json))))
-           (url   (cdr (assq 'browser_download_url asset))))
-      (unless url
-        (error "Cannot find Windows grammar archive in release %s" tag))
-
-      ;; Step 2: download
-      (message "my-treesit-update-grammars: downloading release %s (~14 MB)..." tag)
-      (url-copy-file url temp-tgz t)
-
-      ;; Step 3: extract (tar.exe is built-in on Windows 10+)
-      (when (file-directory-p temp-dir)
-        (delete-directory temp-dir t))
-      (make-directory temp-dir t)
-      (message "my-treesit-update-grammars: extracting...")
-      (unless (zerop (call-process "tar" nil nil nil
-                                   "-xzf" (expand-file-name temp-tgz)
-                                   "-C"   (expand-file-name temp-dir)))
-        (delete-file temp-tgz)
-        (error "tar extraction failed; is tar.exe on PATH?"))
-
-      ;; Step 4: copy with canonical rename to libtree-sitter-LANG.dll
-      ;; Source files are named LANG.dll (bare language name).
-      ;; Built-in treesit requires: libtree-sitter-LANG.dll.
-      ;; Normalize defensively: strip any existing tree-sitter- or
-      ;; libtree-sitter- prefix so the result is always correct.
-      (unless (file-directory-p dest-dir)
-        (make-directory dest-dir t))
-      (let ((count 0))
-        (dolist (file (directory-files-recursively temp-dir "\\.dll\\'"))
-          (let* ((base      (file-name-nondirectory file))
-                 (stem      (file-name-sans-extension base))
-                 (lang      (cond
-                             ((string-prefix-p "libtree-sitter-" stem)
-                              (substring stem (length "libtree-sitter-")))
-                             ((string-prefix-p "tree-sitter-" stem)
-                              (substring stem (length "tree-sitter-")))
-                             (t stem)))
-                 (dest-base (format "libtree-sitter-%s.dll" lang))
-                 (dest      (expand-file-name dest-base dest-dir)))
-            (copy-file file dest t)
-            (cl-incf count)))
-
-        ;; Step 5: cleanup
-        (delete-file temp-tgz)
-        (delete-directory temp-dir t)
-        (message "my-treesit-update-grammars: installed %d DLLs from release %s → %s"
-                 count tag dest-dir)))))
-
-;; Populate treesit-language-source-alist for M-x treesit-install-language-grammar.
-;; Primarily useful on macOS/Linux; Windows uses my-treesit-update-grammars instead.
-(when local-treesit-language-source-alist
-  (setq treesit-language-source-alist local-treesit-language-source-alist))
+;; Tree-sitter grammars: tooling lives in site-lisp/my-treesit-grammars.el.
+;; Languages listed here are built from source (M-x my-treesit-build-grammar);
+;; everything else comes prebuilt via M-x my-treesit-update-grammars (Windows)
+;; or treesit-install-language-grammar.
+(require 'my-treesit-grammars)
+(setq my-treesit-grammar-recipes
+      '((systemverilog "https://github.com/gmlarumbe/tree-sitter-systemverilog")))
+(my-treesit-grammars-register)
 
 ;; Remap classic major modes to their tree-sitter variants where Emacs provides
-;; a built-in ts-mode.  VHDL and Verilog/SV are intentionally excluded.
+;; a built-in ts-mode.  VHDL is intentionally excluded; Verilog/SV is remapped
+;; in site-lisp/verilog-mode-config.el when its grammar is installed.
 (dolist (remap '((python-mode     . python-ts-mode)
                  (c-mode          . c-ts-mode)
                  (c++-mode        . c++-ts-mode)
@@ -1003,48 +910,10 @@ then cleans up.  Emacs will block during the download (~14 MB)."
 (require 'vhdl-mode-config)
 
 ;;
-;; Verilog (built-in)
+;; Verilog / SystemVerilog
 ;;
-(use-package verilog-mode
-  :ensure nil
-  :defer t
-  :custom
-  (verilog-indent-level 4)
-  (verilog-indent-level-module 4)
-  (verilog-indent-level-declaration 4)
-  (verilog-indent-level-behavioral 4)
-  (verilog-indent-level-directive 0)
-  (verilog-cexp-indent 2)
-  (verilog-case-indent 2)
-  (verilog-indent-begin-after-if nil)
-  (verilog-indent-class-inside-pkg t)
-  (verilog-indent-declaration-macros nil)
-  (verilog-indent-lists nil)
-  (verilog-align-ifelse t)
-  (verilog-align-decl-expr-comments t)
-  (verilog-align-comment-distance 1)
-  (verilog-align-assign-expr t)
-  (verilog-highlight-grouping-keywords t)
-  (verilog-highlight-modules t)
-  (verilog-highlight-includes t)
-  (verilog-auto-lineup 'all)
-  (verilog-auto-newline nil)
-  :config
-  (setq verilog-align-typedef-regexp (concat "\\<" verilog-identifier-re "_\\(t\\)\\>")))
-;;(setopt verilog-align-typedef-regexp (concat "\\<" verilog-identifier-re "_\\(t\\)\\>"))
-;; Additional Verilog/SystemVerilog capabilities
-(use-package verilog-ext
-  :ensure t
-  :defer t
-  :hook (verilog-mode . verilog-ext-mode)
-  :init
-  ;; Can also be set through `M-x RET customize-group RET verilog-ext':
-  ;; Comment out/remove the ones you do not need
-  (setq verilog-ext-feature-list
-        '(beautify
-          imenu))
-  :config
-  (verilog-ext-mode-setup))
+;; verilog-mode, verilog-ts-mode, verilog-ext, Eglot/Verible and Eldoc.
+(require 'verilog-mode-config)
 
 ;;
 ;; Tcl
@@ -1121,6 +990,14 @@ environment before the server connects; with no .venv it stays global."
   :config
   (add-to-list 'eglot-server-programs
                '((python-mode python-ts-mode) . ("pylsp"))))
+
+;; Diagnostics (eglot reports Verible lint/syntax errors through flymake).
+(use-package flymake
+  :ensure nil
+  :defer t
+  :bind (:map flymake-mode-map
+              ("M-n" . flymake-goto-next-error)
+              ("M-p" . flymake-goto-prev-error)))
 
 ;;
 ;; Powershell

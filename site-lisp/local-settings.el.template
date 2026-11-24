@@ -80,6 +80,10 @@ variations:
   - doom-monokai-pro
   - doom-one")
 
+;; Trust all themes. `custom-file' is `null-device', so answering "y" to
+;; `load-theme's "treat as safe" prompt would fail trying to save.
+(setq custom-safe-themes t)
+
 ;; Local shell call
 (defvar local-shell-file-name
   (pcase sysinfo-os-family
@@ -88,13 +92,24 @@ variations:
     (_        "/bin/bash"))
   "Shell binary for `explicit-shell-file-name'.")
 
-;; On macOS and Linux, treesit-install-language-grammar compiles grammars from
-;; source.  Set entries for each language you want available.  Leave nil on
-;; Windows — use M-x my-treesit-update-grammars there instead.
+;; tree-sitter CLI used by M-x my-treesit-build-grammar to regenerate and
+;; compile grammars from source.  Windows: unzip tree-sitter-windows-x64.gz from
+;; https://github.com/tree-sitter/tree-sitter/releases into the path below.
+;; Compilation uses MSVC (found automatically) on Windows, cc elsewhere.
+(defvar local-tree-sitter-cli
+  (pcase sysinfo-os-family
+    ('Windows "~/Programs/tree-sitter/tree-sitter.exe")
+    (_        (executable-find "tree-sitter")))
+  "Path to the tree-sitter CLI, or nil if not installed.")
+
+;; Extra grammar recipes for M-x my-treesit-build-grammar and
+;; treesit-install-language-grammar.  Grammars built from source on every
+;; machine belong in `my-treesit-grammar-recipes' (post-init.el); use this for
+;; machine-local additions or overrides.
 ;; Format: (LANGUAGE . ("GIT-URL" [REVISION SOURCEDIR CC CFLAGS]))
 (defvar local-treesit-language-source-alist nil
-  "Source alist for `treesit-install-language-grammar' (macOS/Linux).
-On Windows, use `my-treesit-update-grammars' instead.  Example entries:
+  "Machine-local grammar source recipes merged into `treesit-language-source-alist'.
+On Windows, prebuilt grammars come from `my-treesit-update-grammars'.  Example entries:
   (python  . (\"https://github.com/tree-sitter/tree-sitter-python\"))
   (c       . (\"https://github.com/tree-sitter/tree-sitter-c\"))
   (cpp     . (\"https://github.com/tree-sitter/tree-sitter-cpp\"))

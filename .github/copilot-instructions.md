@@ -41,13 +41,15 @@ The hook that wires this together is `minimal-emacs-load-user-init` defined in `
 - `site-lisp/` — Manually managed packages and local config (on `load-path` as `user-site-lisp-dir`)
   - `vhdl-mode-3.39.3/` — Standalone VHDL mode (loaded directly, not via Elpaca)
   - `vhdl-mode-config.el` — All VHDL mode settings, models, and project config
+  - `my-treesit-grammars.el` — Tree-sitter grammar tooling: prebuilt Windows DLL download (`my-treesit-update-grammars`) and source builds via the tree-sitter CLI (`my-treesit-build-grammar`, `my-treesit-build-all-grammars`). Source-built languages are listed in `my-treesit-grammar-recipes` in `post-init.el`. Windows toolchain setup is documented in `docs/tree-sitter-grammars.md`.
+  - `verilog-mode-config.el` — All Verilog/SystemVerilog config, `require`'d from `post-init.el`: `verilog-mode`, `verilog-ts-mode`, `verilog-ext`, Eglot/Verible, a declaration Eldoc function, and block-label naming for imenu/which-func.
   - `local-settings.el` — **Not committed.** Machine-local vars: name, email, VHDL company, font, nerd-icons font family, theme, temp dir, notes dir/file, shell binary. Uses `sysinfo-os-family` with `pcase` for cross-platform defaults. Copy from `local-settings.el.template`.
   - `local-vhdl-proj.el` — **Not committed.** Machine-local VHDL project definitions. Copy from `local-vhdl-proj.el.template`.
   - `sysinfo/` — OS detection library providing `sysinfo-os-family` (`Windows`, `macOS`, `Linux`, etc.) and `sysinfo-os-type` (e.g., `WSL`). Loaded in `post-init.el` before `local-settings.el` so that `pcase sysinfo-os-family` expressions in `local-settings.el` evaluate correctly.
   - `Emacs-MATLAB-Mode/`, `yasnippet/`, `yasnippet-snippets/`, `vscode-cp-proxy/` — Git submodules
 - `var/` — Runtime data directory (`user-emacs-directory` is redirected here to keep the repo root clean). Contains `elpa/`, `elpaca/`, `recentf`, `savehist`, etc.
   - `var/snippets/` — **Tracked in git.** Custom YASnippet snippets.
-  - `var/tree-sitter/` — **Tracked in git.** Tree-sitter grammar files.
+  - `var/tree-sitter/` — **Not tracked** (ignored by `var/*`). Tree-sitter grammar libraries, installed per machine.
 - `autosave/` — Auto-save files (not tracked)
 
 ## Key Conventions
@@ -107,7 +109,13 @@ Built-in VHDL process templates (invoked via `C-c C-m` in vhdl-mode): sync proce
 
 ### Verilog/SystemVerilog Configuration
 
-`verilog-mode` is built into Emacs (`:ensure f`). `verilog-ext` (from Elpaca) is layered on top and hooked to `verilog-mode` with `beautify` and `imenu` features enabled. Indentation is 4 spaces at all levels. Typedef alignment regexp matches the `*_t` suffix convention (`verilog-align-typedef-regexp`).
+All settings live in `site-lisp/verilog-mode-config.el`, which is `require`'d from `post-init.el`.
+
+- `verilog-mode` is built into Emacs (`:ensure nil`). Indentation is 4 spaces at all levels. Typedef alignment regexp matches the `*_t` suffix convention (`verilog-align-typedef-regexp`). `M-?` is unbound in `verilog-mode-map` so the global `xref-find-references` applies.
+- `verilog-ts-mode` (Elpaca) replaces `verilog-mode` via `major-mode-remap-alist` only when the `systemverilog` grammar is installed (built from source; see `docs/tree-sitter-grammars.md`). It derives from `verilog-mode`, so `verilog-mode-hook` covers both. imenu uses its `tree-group` style; always/initial/final blocks are named by their label (advice on `verilog-ts--node-identifier-name`).
+- `verilog-ext` (Elpaca) features: beautify, hierarchy, navigation, which-func, hideshow, ports, typedefs. Omitted: `imenu` (would override verilog-ts-mode's index), `xref`/`capf` (Eglot), `block-end-comments`/`time-stamp` (rewrite the buffer on save).
+- Eglot runs `verible-verilog-ls --rules_config_search [--flagfile=<nearest .verible_format>]`, with `eglot-stay-out-of` imenu. Per-project files, found by searching upward: `.rules.verible_lint`, `.verible_format` (formatter flags, no `--inplace`), `verible.filelist` (cross-file navigation). Install steps and templates for the first two are in `docs/verible.md` and `docs/verible/`.
+- Eldoc: `my-verilog-eldoc-declaration` shows the declaration of the symbol at point (or the enclosing task/function call) via the server's definition location plus tree-sitter. Verible's hover is not advertised and is left off.
 
 ### Tcl File Associations
 
@@ -119,7 +127,7 @@ Several FPGA-specific file extensions are mapped to `tcl-mode` in `post-init.el`
 
 ### LSP via Eglot
 
-Eglot is built-in and currently configured only for **Python** (`python-mode` hook, `pylsp` server). LSP for VHDL and Verilog is not yet wired in. The pylsp workspace configuration enables: isort, pycodestyle, pyflakes, pydocstyle, mccabe; autopep8 and yapf are disabled.
+Eglot is built-in and configured for **Python** (`python-mode`/`python-ts-mode` hook, `pylsp` server) in `post-init.el`, and for **Verilog/SystemVerilog** (Verible) in `site-lisp/verilog-mode-config.el`. LSP for VHDL is not yet wired in. The pylsp workspace configuration enables: isort, pycodestyle, pyflakes, pydocstyle, mccabe; autopep8 and yapf are disabled.
 
 ### YASnippet
 
